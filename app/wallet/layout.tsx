@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import "@/app/globals.css";
+import { SignOutButton } from "@/components/sing-out-button";
+import Link from "next/link";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,12 +25,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} bg-neutral-100 text-foreground antialiased text-zinc-800`}
-      >
-        {children}
-      </body>
-    </html>
+    <main
+      className={`${geistSans.variable} ${geistMono.variable} antialiased w-full max-w-6xl mx-auto`}
+    >
+      <nav className="flex justify-between items-center p-4 mx-auto">
+        <Link href="/wallet" className="font-bold text-lg">
+          Lucas Wallet
+        </Link>
+        <SignOutButton />
+      </nav>
+      {children}
+    </main>
   );
 }
