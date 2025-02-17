@@ -71,7 +71,6 @@ export default function TransferModal() {
     first_name: string;
     last_name: string;
     email: string;
-
   } | null>(null);
 
   const transferForm = useForm<z.infer<typeof transferFormSchema>>({
@@ -204,7 +203,11 @@ export default function TransferModal() {
             <p>
               ¿Estás seguro de que deseas transferir{" "}
               <span className="text-red-400">{transferData.amount} ETH</span> a{" "}
-              <span className="text-red-400">{transferData.email}</span>?
+              <span className="text-red-400 font-bold">
+                {recipient?.first_name} {recipient?.last_name} (
+                {transferData.email})
+              </span>
+              ?
             </p>
             <div className="flex gap-4">
               <Button onClick={() => setTransferState("pending")}>Sí</Button>
