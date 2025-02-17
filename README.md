@@ -16,16 +16,4 @@ This application demonstrates a simple flow for creating Ethereum wallets, signi
 
 3. **Transaction Flow**  
    - Users can initiate ETH transfers by entering a recipient's email and the amount to send.  
-   - The app decrypts the sender's private key once they confirm with their password, then completes the on-chain transaction.  
-
-## Folder & File Overview
-
-### 1. `app/create-wallet/actions.ts`
-
-- **Key Functions**: `signup`  
-- **Dependencies**:  
-  - `createWallet` from `utils.ts`  
-  - `encryptData` from `app/security/encrypt.ts`  
-  - Supabase for user authentication and data storage  
-
-### 2. `app/create-wallet/utils.ts`
+   - The app decrypts the sender's private key once they confirm with their password, then completes the on-chain transaction. 
