@@ -29,10 +29,6 @@ import { createClient } from "@/utils/supabase/client";
 import { decryptData } from "@/app/security/encrypt";
 import { walletClient } from "@/wallet.config";
 
-/* -------------------------------------------------------------------------- */
-/*                            Validation Schemas                              */
-/* -------------------------------------------------------------------------- */
-
 /**
  * Transfer form schema (email and amount).
  * - Convert amount to number using z.coerce.number() so we can validate properly.
@@ -56,10 +52,6 @@ const passwordFormSchema = z.object({
     .min(6, { message: "La contraseña debe tener al menos 6 caracteres." }),
 });
 
-/* -------------------------------------------------------------------------- */
-/*                         Component: TransferModal                           */
-/* -------------------------------------------------------------------------- */
-
 export default function TransferModal() {
   const supabase = createClient();
 
@@ -82,10 +74,6 @@ export default function TransferModal() {
 
   } | null>(null);
 
-  /* ------------------------------------------------------------------------ */
-  /*                             Form Instances                                */
-  /* ------------------------------------------------------------------------ */
-
   const transferForm = useForm<z.infer<typeof transferFormSchema>>({
     resolver: zodResolver(transferFormSchema),
     defaultValues: {
@@ -101,9 +89,6 @@ export default function TransferModal() {
     },
   });
 
-  /* ------------------------------------------------------------------------ */
-  /*                           Handler: Step One                               */
-  /* ------------------------------------------------------------------------ */
   /**
    * First form submit handler - fetch recipient data by email.
    */
@@ -138,9 +123,6 @@ export default function TransferModal() {
     }
   }
 
-  /* ------------------------------------------------------------------------ */
-  /*                           Handler: Final Step                             */
-  /* ------------------------------------------------------------------------ */
   /**
    * Confirm transfer with the user's password.
    */
@@ -202,9 +184,6 @@ export default function TransferModal() {
     }
   }
 
-  /* ------------------------------------------------------------------------ */
-  /*                              Render Logic                                 */
-  /* ------------------------------------------------------------------------ */
   return (
     <Dialog>
       <DialogTrigger className="w-full h-full max-h-10 rounded-md bg-neutral-900 hover:bg-neutral-800 text-neutral-50 duration-150 font-semibold shadow-md">
