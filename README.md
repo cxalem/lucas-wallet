@@ -1,6 +1,4 @@
----
-
-# Additional Application Overview
+# Application Overview
 
 This application demonstrates a simple flow for creating Ethereum wallets, signing up new users, encrypting/decrypting private keys, and transferring balances between users. It uses [Next.js server actions](https://nextjs.org/docs/app/api-reference/file-conventions/route.ts) alongside [Supabase](https://supabase.com/) for data persistence and user management.
 
