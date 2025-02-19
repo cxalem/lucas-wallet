@@ -17,8 +17,6 @@ export default async function PrivatePage() {
     address: user_metadata.wallet_address,
   });
 
-  // limit decimasl to 3
-
   const formattedBalance = formatEther(balance);
 
   return (

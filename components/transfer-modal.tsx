@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -28,29 +29,8 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/client";
 import { decryptData } from "@/app/security/encrypt";
 import { walletClient } from "@/wallet.config";
-
-/**
- * Transfer form schema (email and amount).
- * - Convert amount to number using z.coerce.number() so we can validate properly.
- * - Enforce a minimum positive amount (e.g. > 0).
- */
-const transferFormSchema = z.object({
-  email: z.string().email({ message: "Ingresa un email válido." }),
-  amount: z.coerce
-    .number({
-      invalid_type_error: "Debes ingresar un número para la cantidad.",
-    })
-    .positive("La cantidad debe ser mayor que 0."),
-});
-
-/**
- * Password form schema used to confirm the transaction.
- */
-const passwordFormSchema = z.object({
-  password: z
-    .string()
-    .min(6, { message: "La contraseña debe tener al menos 6 caracteres." }),
-});
+import { INPUT_ERROR_TYPES } from "@/utils/constants";
+import { passwordFormSchema, transferFormSchema } from "@/utils/schemas";
 
 export default function TransferModal() {
   const supabase = createClient();
@@ -72,6 +52,10 @@ export default function TransferModal() {
     last_name: string;
     email: string;
   } | null>(null);
+
+  const [inputError, setInputError] = useState<
+    (typeof INPUT_ERROR_TYPES)[keyof typeof INPUT_ERROR_TYPES] | null
+  >(null);
 
   const transferForm = useForm<z.infer<typeof transferFormSchema>>({
     resolver: zodResolver(transferFormSchema),
@@ -95,6 +79,9 @@ export default function TransferModal() {
     values: z.infer<typeof transferFormSchema>
   ) {
     try {
+      // 1. Retrieve user data from Supabase to get the private key
+      const loggedUser = await supabase.auth.getUser();
+
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
@@ -102,13 +89,19 @@ export default function TransferModal() {
 
       if (error) {
         console.error("Error al obtener el usuario", error);
-        setTransferState("error");
+        setInputError(INPUT_ERROR_TYPES.user_not_found);
         return;
       }
 
       if (!data || data.length === 0) {
         console.error("No se encontraron usuarios con ese email.");
-        setTransferState("error");
+        setInputError(INPUT_ERROR_TYPES.user_not_found);
+        return;
+      }
+
+      if (loggedUser?.data.user?.email === values.email) {
+        console.error("No puedes transferir fondos a tu propia cuenta.");
+        setInputError(INPUT_ERROR_TYPES.same_account);
         return;
       }
 
@@ -131,7 +124,6 @@ export default function TransferModal() {
     if (!transferData || !recipient) {
       // Basic safeguard
       console.error("Datos incompletos para la transferencia.");
-      setTransferState("error");
       return;
     }
 
@@ -143,7 +135,6 @@ export default function TransferModal() {
 
       if (!loggedUser?.data.user) {
         console.error("No hay usuario autenticado.");
-        setTransferState("error");
         return;
       }
 
@@ -205,18 +196,20 @@ export default function TransferModal() {
               <span className="text-red-400">{transferData.amount} ETH</span> a{" "}
               <span className="text-red-400 font-bold">
                 {recipient?.first_name} {recipient?.last_name} (
-                {transferData.email})
+                {recipient?.email})
               </span>
               ?
             </p>
             <div className="flex gap-4">
               <Button onClick={() => setTransferState("pending")}>Sí</Button>
-              <Button
-                variant="secondary"
-                onClick={() => setTransferState("idle")}
-              >
-                No
-              </Button>
+              <DialogClose asChild>
+                <Button
+                  variant="secondary"
+                  onClick={() => setTransferState("idle")}
+                >
+                  No
+                </Button>
+              </DialogClose>
             </div>
           </div>
         ) : transferState === "pending" ? (
@@ -249,12 +242,14 @@ export default function TransferModal() {
               />
               <div className="flex gap-4">
                 <Button type="submit">Confirmar</Button>
-                <Button
-                  variant="secondary"
-                  onClick={() => setTransferState("idle")}
-                >
-                  Cancelar
-                </Button>
+                <DialogClose asChild>
+                  <Button
+                    variant="secondary"
+                    onClick={() => setTransferState("idle")}
+                  >
+                    Cancelar
+                  </Button>
+                </DialogClose>
               </div>
             </form>
           </Form>
@@ -262,7 +257,9 @@ export default function TransferModal() {
           /* ----------------------- Success Message ----------------------- */
           <div className="flex flex-col items-center gap-4">
             <p className="text-green-600">Transferencia exitosa</p>
-            <Button onClick={() => setTransferState("idle")}>Cerrar</Button>
+            <DialogClose asChild>
+              <Button onClick={() => setTransferState("idle")}>Cerrar</Button>
+            </DialogClose>
           </div>
         ) : transferState === "error" ? (
           /* ----------------------- Error Message ----------------------- */
@@ -285,11 +282,26 @@ export default function TransferModal() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Correo del destinatario" {...field} />
+                    <FormControl
+                      onChange={(e) => {
+                        setInputError(null);
+                        field.onChange(e);
+                      }}
+                    >
+                      <Input
+                        placeholder="Correo del destinatario"
+                        {...field}
+                        className={inputError ? "border-red-600" : ""}
+                      />
                     </FormControl>
                     <FormDescription>
-                      Ingresa el email de la cuenta a la que quieres transferir.
+                      {!inputError ? (
+                        "Ingresa el email de la cuenta a la que quieres transferir."
+                      ) : (
+                        <span className="text-red-600">
+                          {inputError?.message}
+                        </span>
+                      )}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
