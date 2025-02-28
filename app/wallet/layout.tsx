@@ -26,15 +26,17 @@ export default function RootLayout({
 }>) {
   return (
     <main
-      className={`${geistSans.variable} ${geistMono.variable} antialiased w-full max-w-6xl mx-auto`}
+      className={`${geistSans.variable} ${geistMono.variable} dark:bg-neutral-900 bg-fixed bg-no-repeat bg-cover dark:text-blue-50 bg-neutral-100 text-foreground antialiased text-zinc-800 min-h-screen`}
     >
-      <nav className="flex justify-between items-center p-4 mx-auto">
-        <Link href="/wallet" className="font-bold text-lg">
-          Lucas Wallet
+      <nav className="flex justify-between items-center py-8 w-full max-w-6xl mx-auto">
+        <Link href="/" className="font-bold text-lg">
+          <h1 className="text-2xl/7 font-black uppercase text-center">
+            Lucas <br /> Wallet
+          </h1>
         </Link>
         <SignOutButton />
       </nav>
-      {children}
+      <section className="max-w-6xl mx-auto">{children}</section>
     </main>
   );
 }

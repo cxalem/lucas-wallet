@@ -13,7 +13,10 @@ export const SignOutButton = () => {
   };
 
   return (
-    <Button className="font-semibold" onClick={signOut}>
+    <Button
+      className="bg-violet-600 hover:bg-violet-700 rounded-full px-10 py-2 text-blue-50 shadow-lg"
+      onClick={signOut}
+    >
       Cerrar sesión
     </Button>
   );
