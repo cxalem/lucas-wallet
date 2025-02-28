@@ -2,11 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
-@media (prefers-color-scheme: light) {
+@media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #d0d0d0;
   }
+}
+
+.background_rainbow_halo {
+  background: radial-gradient(
+    circle,
+    rgba(21, 0, 255, 0) 50%,
+    rgb(81, 0, 255) 60%,
+    rgb(238, 0, 255) 62%,
+    rgb(0, 13, 255) 64%,
+    rgb(255, 128, 0) 66%,
+    rgb(255, 247, 0) 68%,
+    rgb(255, 149, 0) 70%
+  );
+  background-size: 100% 100%;
 }
 
 body {
