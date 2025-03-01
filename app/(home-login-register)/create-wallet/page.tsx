@@ -7,7 +7,7 @@ export default function CreateWalletPage() {
   return (
     <div className="min-h-screen flex flex-col gap-4 items-center mt-16">
       <div className="bg-gradient-to-b from-red-600 via-yellow-600 to-purple-600 p-[.5px] rounded-lg w-full max-w-xl shadow-2xl shadow-yellow-600/30 ">
-        <form className="flex flex-col gap-6 items-center backdrop-blur-sm justify-center mx-auto bg-neutral-800 px-16 py-16 rounded-lg w-full max-w-xl">
+        <form className="flex flex-col gap-6 items-center backdrop-blur-sm justify-center mx-auto bg-neutral-800 px-10 md:px-16 py-16 rounded-lg w-full max-w-xl">
           <div className="flex flex-col gap-2 items-center">
             <Link href="/" className="text-lg">
               <h1 className="text-4xl/9 font-black uppercase text-center">

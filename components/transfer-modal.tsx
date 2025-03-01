@@ -176,11 +176,11 @@ export default function TransferModal() {
 
   return (
     <Dialog>
-      <DialogTrigger className="w-full h-full max-h-10 rounded-md bg-neutral-900 hover:bg-neutral-800 text-neutral-50 duration-150 font-semibold shadow-md">
+      <DialogTrigger className="bg-gradient-to-r from-violet-800 via-violet-600 to-violet-800  px-10 py-2 rounded-full text-zinc-50 font-medium hover:shadow-xl w-full duration-150 shadow-md">
         Transferir
       </DialogTrigger>
 
-      <DialogContent>
+      <DialogContent className="bg-neutral-900">
         <DialogHeader>
           <DialogTitle>Transferir</DialogTitle>
           <DialogDescription>

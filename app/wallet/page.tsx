@@ -20,25 +20,34 @@ export default async function PrivatePage() {
   const formattedBalance = formatEther(balance);
 
   return (
-    <main className="grid grid-cols-2 gap-4">
-      <div className="p-4 space-y-4">
-        <h3 className="text-4xl font-bold">
-          Bienvenido,{" "}
-          <span className="text-sky-500">{user_metadata.first_name}</span>! Aquí
-          podrás ver tus Lucas
-        </h3>
-        <section className="bg-white space-y-4 rounded-lg py-4 px-6 border border-neutral-300">
-          <h3 className="text-lg flex flex-col gap-2 font-bold">Saldo</h3>
-          <div className="flex justify-between place-items-end">
-            <p className="text-4xl font-semibold">
-              {formattedBalance.slice(0, 4)}{" "}
-              <span className="text-sky-500">USD</span>
-            </p>
-            <p className="text-neutral-900 font-medium text-xl text-opacity-50">
-              {formattedBalance.slice(0, 4)} ETH
-            </p>
+    <main className="relative grid grid-cols-1 md:grid-cols-2 gap-4 h-screen max-h-80">
+      <div className="flex flex-col gap-2">
+        <div className="bg-gradient-to-b flex flex-col from-red-600 h-full via-yellow-600 to-purple-600 p-[.5px] rounded-xl w-full shadow-2xl shadow-yellow-600/30 ">
+          <div className="p-6 flex flex-col justify-between bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 rounded-xl h-full">
+            <div className="font-bold">
+              <p className="text-3xl">
+                Bienvenido, <span className="">{user_metadata.first_name}</span>
+                !
+                <br />
+              </p>
+              <span className="text-blue-50 text-opacity-70 font-thin text-md">
+                Este estu saldo disponible en tu billetera:
+              </span>
+            </div>
+            <section className="space-y-1 rounded-lg">
+              <h3 className="text-blue-50 text-lg flex flex-col gap-2 font-semibold text-opacity-50">Saldo:</h3>
+              <div className="flex justify-between place-items-end">
+                <p className="text-4xl font-semibold">
+                  ${formattedBalance.slice(0, 4)}{" "}
+                  <span className="font-thin text-xl opacity-50">USD</span>
+                </p>
+                <p className="text-blue-50 font-medium text-xl text-opacity-50">
+                  {formattedBalance.slice(0, 4)} ETH
+                </p>
+              </div>
+            </section>
           </div>
-        </section>
+        </div>
         <TransferModal />
       </div>
     </main>
