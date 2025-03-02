@@ -16,7 +16,8 @@ import TransferModal from "./transfer-modal";
 const CONTACTS: Contact[] = [
   {
     id: "1",
-    name: "Angely Rodriguez",
+    first_name: "Angely",
+    last_name: "Rodriguez",
     email: "cami.vengy@gmail.com",
     phone: "922304636",
     lastTransaction: {
@@ -27,7 +28,8 @@ const CONTACTS: Contact[] = [
   },
   {
     id: "4",
-    name: "Alejandro Mena",
+    first_name: "Alejandro",
+    last_name: "Mena",
     email: "alejandro.mena@gmail.com",
     phone: "922304636",
     lastTransaction: {
@@ -38,7 +40,8 @@ const CONTACTS: Contact[] = [
   },
   {
     id: "2",
-    name: "Andrés Dominguez",
+    first_name: "Andrés",
+    last_name: "Dominguez",
     email: "andresdom@gmail.com",
     phone: "541987765",
     lastTransaction: {
@@ -49,7 +52,8 @@ const CONTACTS: Contact[] = [
   },
   {
     id: "3",
-    name: "Jose Garcia",
+    first_name: "Jose",
+    last_name: "Garcia",
     email: "jose_g@gmail.com",
     lastTransaction: {
       id: "t3",
@@ -74,7 +78,9 @@ export default function ContactsList() {
   // Filter contacts based on search query
   const filteredContacts = sortedContacts.filter(
     (contact) =>
-      contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      `${contact.first_name} ${contact.last_name}`
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
       contact.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (contact.phone && contact.phone.includes(searchQuery))
   );

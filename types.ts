@@ -1,6 +1,7 @@
 export interface Contact {
   id: string;
-  name: string;
+  first_name: string;
+  last_name: string;
   email: string;
   phone?: string;
   lastTransaction?: Transaction;
@@ -11,4 +12,12 @@ export interface Transaction {
   id: string;
   date: Date;
   amount: number;
+}
+
+export enum TransferStateEnum {
+  Idle = "idle",
+  Validating = "validating",
+  Pending = "pending",
+  Success = "success",
+  Error = "error",
 }
