@@ -23,8 +23,8 @@ export default async function Home() {
               Cuando quieras, donde quieras
             </p>
           </div>
-          <div className="p-2">
-            <div className="bg-gradient-to-b from-red-600 via-yellow-600 to-purple-600 p-[.5px] rounded-lg w-full max-w-xl shadow-2xl shadow-yellow-600/30 ">
+          <div className="p-2 w-full flex justify-center">
+            <div className="bg-gradient-to-b from-red-600 via-yellow-600 to-purple-600 p-[1px] rounded-lg w-full max-w-xl shadow-2xl shadow-yellow-600/30 ">
               <div className="flex flex-col gap-4 items-center bg-neutral-800 p-6 rounded-lg w-full max-w-xl">
                 <div className="flex flex-col gap-3 bg-neutral-600 p-4 rounded-lg w-full">
                   <span className="text-lg opacity-55 font-medium">

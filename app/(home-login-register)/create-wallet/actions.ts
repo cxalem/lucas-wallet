@@ -24,7 +24,6 @@ export async function signup(formData: FormData) {
     password: formData.get("password"),
     first_name: formData.get("first_name"),
     last_name: formData.get("last_name"),
-    phone: formData.get("phone"),
   });
 
   if (!result.success) {
@@ -33,7 +32,7 @@ export async function signup(formData: FormData) {
     return;
   }
 
-  const { email, password, first_name, last_name, phone } = result.data;
+  const { email, password, first_name, last_name } = result.data;
 
   const supabase = await createClient();
   const { data: existingUserData, error: existingUserError } = await supabase
@@ -55,65 +54,59 @@ export async function signup(formData: FormData) {
     return;
   }
 
-  try {
-    const { address, privateKey, mnemonic } = createWallet();
+  const { address, privateKey, mnemonic } = createWallet();
 
-    const { salt, iv, ciphertext } = await encryptData(
-      password,
-      JSON.stringify({ privateKey, mnemonic })
-    );
+  const { salt, iv, ciphertext } = await encryptData(
+    password,
+    JSON.stringify({ privateKey, mnemonic })
+  );
 
-    const signUpPayload = {
-      email,
-      password,
-      phone,
-      options: {
-        data: {
-          first_name,
-          last_name,
-          wallet_address: address,
-          salt,
-          iv,
-          ciphertext,
-        },
+  const signUpPayload = {
+    email,
+    password,
+    options: {
+      data: {
+        first_name,
+        last_name,
+        wallet_address: address,
+        salt,
+        iv,
+        ciphertext,
       },
-    };
+    },
+  };
 
-    const { data: userData, error: signUpError } = await supabase.auth.signUp(
-      signUpPayload
-    );
+  const { data: userData, error: signUpError } = await supabase.auth.signUp(
+    signUpPayload
+  );
 
-    if (signUpError || !userData.user) {
-      console.error("Error during signUp:", signUpError);
-      redirect("/error");
-      return;
-    }
-
-    const profilePayload = {
-      id: userData.user.id,
-      email,
-      first_name,
-      last_name,
-      wallet_address: address,
-      salt,
-      iv,
-      ciphertext,
-    };
-
-    const { error: profileError } = await supabase
-      .from("profiles")
-      .insert(profilePayload);
-
-    if (profileError) {
-      console.error("Error inserting profile:", profileError);
-      redirect("/error");
-      return;
-    }
-
-    revalidatePath("/", "layout");
-    redirect("/");
-  } catch (err) {
-    console.error("Unexpected error during signup:", err);
+  if (signUpError || !userData.user) {
+    console.error("Error during signUp:", signUpError);
     redirect("/error");
+    return;
   }
+
+  const profilePayload = {
+    id: userData.user.id,
+    email,
+    first_name,
+    last_name,
+    wallet_address: address,
+    salt,
+    iv,
+    ciphertext,
+  };
+
+  const { error: profileError } = await supabase
+    .from("profiles")
+    .insert(profilePayload);
+
+  if (profileError) {
+    console.error("Error inserting profile:", profileError);
+    redirect("/error");
+    return;
+  }
+
+  revalidatePath("/", "layout");
+  redirect("/");
 }

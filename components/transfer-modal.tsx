@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,11 +28,24 @@ import { Button } from "@/components/ui/button";
 
 import { createClient } from "@/utils/supabase/client";
 import { decryptData } from "@/app/security/encrypt";
-import { walletClient } from "@/wallet.config";
+import { walletClient, client } from "@/wallet.config";
 import { INPUT_ERROR_TYPES } from "@/utils/constants";
 import { passwordFormSchema, transferFormSchema } from "@/utils/schemas";
+import { Contact } from "@/types";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import Image from "next/image";
+import { XIcon } from "lucide-react";
+import { formatEther } from "viem";
 
-export default function TransferModal() {
+type TransferModalProps = {
+  type?: "transfer" | "contact";
+  contact?: Contact;
+};
+
+export default function TransferModal({
+  type = "transfer",
+  contact,
+}: TransferModalProps) {
   const supabase = createClient();
 
   // Transfer states for controlling flow of the process
@@ -57,6 +70,8 @@ export default function TransferModal() {
     (typeof INPUT_ERROR_TYPES)[keyof typeof INPUT_ERROR_TYPES] | null
   >(null);
 
+  const [userContact, setUserContact] = useState<Contact | null>(null);
+
   const transferForm = useForm<z.infer<typeof transferFormSchema>>({
     resolver: zodResolver(transferFormSchema),
     defaultValues: {
@@ -71,6 +86,35 @@ export default function TransferModal() {
       password: "",
     },
   });
+
+  const getUserBalance = async () => {
+    const { data, error } = await supabase.auth.getUser();
+
+    if (error) {
+      console.error("Error al obtener el usuario", error);
+      return;
+    }
+
+    const { user_metadata } = data.user;
+
+    const balance = await client.getBalance({
+      address: user_metadata.wallet_address,
+    });
+    const formattedBalance = formatEther(balance);
+    return formattedBalance.slice(0, 5);
+  };
+
+  const [userBalance, setUserBalance] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (userContact) {
+      getUserBalance().then((balance) => {
+        if (balance) {
+          setUserBalance(balance);
+        }
+      });
+    }
+  }, [userContact]);
 
   /**
    * First form submit handler - fetch recipient data by email.
@@ -174,11 +218,56 @@ export default function TransferModal() {
     }
   }
 
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((part) => part[0])
+      .join("")
+      .toUpperCase();
+  };
+
   return (
     <Dialog>
-      <DialogTrigger className="bg-gradient-to-r from-violet-800 via-violet-600 to-violet-800  px-10 py-2 rounded-full text-zinc-50 font-medium hover:shadow-xl w-full duration-150 shadow-md">
-        Transferir
-      </DialogTrigger>
+      {type === "transfer" ? (
+        <DialogTrigger className="bg-gradient-to-r from-violet-800 via-violet-600 to-violet-800  px-10 py-2 rounded-full text-zinc-50 font-medium hover:shadow-xl w-full duration-150 shadow-md">
+          Transferir
+        </DialogTrigger>
+      ) : (
+        type === "contact" &&
+        contact && (
+          <DialogTrigger
+            onClick={() => {
+              transferForm.setValue("email", contact.email);
+              setUserContact(contact);
+            }}
+            className="flex cursor-pointer items-center justify-between p-3 hover:bg-muted rounded-lg transition-colors w-full"
+          >
+            <div className="flex items-center gap-3">
+              <Avatar className="h-10 w-10">
+                {contact.avatarUrl ? (
+                  <Image
+                    src={contact.avatarUrl || "/placeholder.svg"}
+                    alt={contact.name}
+                    width={40}
+                    height={40}
+                  />
+                ) : (
+                  <AvatarFallback>{getInitials(contact.name)}</AvatarFallback>
+                )}
+              </Avatar>
+              <div className="flex flex-col text-start">
+                <span className="text-sm text-muted-foreground">
+                  {contact.email}
+                </span>
+                <span className="font-medium">{contact.name}</span>
+              </div>
+            </div>
+            {contact?.phone && (
+              <span className="text-muted-foreground">{contact.phone}</span>
+            )}
+          </DialogTrigger>
+        )
+      )}
 
       <DialogContent className="bg-neutral-900">
         <DialogHeader>
@@ -202,14 +291,12 @@ export default function TransferModal() {
             </p>
             <div className="flex gap-4">
               <Button onClick={() => setTransferState("pending")}>Sí</Button>
-              <DialogClose asChild>
-                <Button
-                  variant="secondary"
-                  onClick={() => setTransferState("idle")}
-                >
-                  No
-                </Button>
-              </DialogClose>
+              <Button
+                variant="secondary"
+                onClick={() => setTransferState("idle")}
+              >
+                No
+              </Button>
             </div>
           </div>
         ) : transferState === "pending" ? (
@@ -273,38 +360,72 @@ export default function TransferModal() {
           /* ---------------------- Step 1: Transfer form ---------------------- */
           <Form {...transferForm}>
             <form
+              className="space-y-4"
               onSubmit={transferForm.handleSubmit(handleTransferFormSubmit)}
-              className="space-y-6"
             >
               <FormField
                 control={transferForm.control}
                 name="email"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl
-                      onChange={(e) => {
-                        setInputError(null);
-                        field.onChange(e);
-                      }}
-                    >
-                      <Input
-                        placeholder="Correo del destinatario"
-                        {...field}
-                        className={inputError ? "border-red-600" : ""}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      {!inputError ? (
-                        "Ingresa el email de la cuenta a la que quieres transferir."
-                      ) : (
-                        <span className="text-red-600">
-                          {inputError?.message}
-                        </span>
-                      )}
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
+                  <div>
+                    <FormItem className={`${userContact && "hidden"}`}>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl
+                        onChange={(e) => {
+                          setInputError(null);
+                          field.onChange(e);
+                        }}
+                      >
+                        <Input
+                          placeholder="Correo del destinatario"
+                          value={userContact?.email || field.value}
+                          className={inputError ? "border-red-600" : ""}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        {!inputError ? (
+                          "Ingresa el email de la cuenta a la que quieres transferir."
+                        ) : (
+                          <span className="text-red-600">
+                            {inputError?.message}
+                          </span>
+                        )}
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+
+                    {userContact && (
+                      <div className="flex flex-col gap-2">
+                        <Button
+                          onClick={() => {
+                            transferForm.setValue("email", "");
+                            setUserContact(null);
+                          }}
+                          className="flex justify-between bg-neutral-800 w-full h-fit px-3 py-1 hover:bg-neutral-700"
+                        >
+                          <div className="flex flex-col text-start items-start">
+                            <span className="text-lg text-blue-50 font-bold">
+                              {userContact.name}
+                            </span>
+                            <span className="text-sm text-muted-foreground">
+                              {userContact.email}
+                            </span>
+                          </div>
+                          <XIcon className="w-4 h-4 text-muted-foreground" />
+                        </Button>
+
+                        {inputError ? (
+                          <span className="text-red-400 px-2">
+                            {inputError?.message}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground text-sm px-3">
+                            (*) Asegúrate de que sea el destinatario correcto
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 )}
               />
               <FormField
@@ -312,15 +433,34 @@ export default function TransferModal() {
                 name="amount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Cantidad</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Cantidad de ETH"
-                        type="number"
-                        step="any"
-                        {...field}
-                      />
-                    </FormControl>
+                    <FormLabel>Cantidad que deseas transferir</FormLabel>
+                    <div className="m-0 h-24 bg-neutral-700 rounded-lg flex flex-col justify-between py-2 px-3">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground text-sm">
+                          Saldo disponible:
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground text-sm">
+                            ${userBalance}
+                          </span>
+                          <span className="text-muted-foreground text-sm">
+                            ETH
+                          </span>
+                        </div>
+                      </div>
+                      <FormControl>
+                        <div className="flex text-3xl gap-1">
+                          $
+                          <Input
+                            placeholder="Cantidad de ETH"
+                            className="border-none h-fit p-0 !text-3xl [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            type="number"
+                            step="any"
+                            {...field}
+                          />
+                        </div>
+                      </FormControl>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
