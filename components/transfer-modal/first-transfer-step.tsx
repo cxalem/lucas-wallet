@@ -19,14 +19,14 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/client";
 import { INPUT_ERROR_TYPES } from "@/utils/constants";
 import { transferFormSchema } from "@/utils/schemas";
-import { Contact } from "@/types";
+import { Profile } from "@/types";
 import { XIcon } from "lucide-react";
 import { useDebounce } from "@/lib/hooks";
 
 type TransferModalFirstStepProps = {
   transferForm: UseFormReturn<z.infer<typeof transferFormSchema>>;
-  userContact: Contact | null;
-  setUserContact: (contact: Contact | null) => void;
+  userContact: Profile | null;
+  setUserContact: (contact: Profile | null) => void;
   handleTransferFormSubmit: (
     values: z.infer<typeof transferFormSchema>
   ) => void;
@@ -46,7 +46,7 @@ export const TransferModalFirstStep = ({
   setInputError,
 }: TransferModalFirstStepProps) => {
   const [query, setQuery] = useState<string>("");
-  const [searchResults, setSearchResults] = useState<Contact[]>([]);
+  const [searchResults, setSearchResults] = useState<Profile[]>([]);
   const [isSearching, setIsSearching] = useState<boolean>(false);
 
   const supabase = createClient();
@@ -73,12 +73,12 @@ export const TransferModalFirstStep = ({
       .limit(10);
 
     if (error) {
-      console.error("Error al obtener el usuario", error);
+      console.error("Error getting user", error);
       return;
     }
 
     if (!data || data.length === 0) {
-      console.log("No se encontraron usuarios con ese email.");
+      console.log("No users found with that email.");
       setSearchResults([]);
       return;
     }
@@ -101,7 +101,9 @@ export const TransferModalFirstStep = ({
           render={({ field }) => (
             <div className="h-28">
               <FormItem
-                className={`${userContact && "hidden"} h-full space-y-0`}
+                className={`${
+                  userContact ? "hidden" : "flex flex-col gap-2"
+                } space-y-0 justify-between mt-6`}
               >
                 <FormLabel>Email</FormLabel>
                 <FormControl>
@@ -119,16 +121,16 @@ export const TransferModalFirstStep = ({
                 </FormControl>
                 <FormDescription>
                   {!inputError ? (
-                    "Ingresa el email de la cuenta a la que quieres transferir."
+                    "Add the email of the account you want to transfer to."
                   ) : (
-                    <span className="text-red-600">{inputError?.message}</span>
+                    <span className="text-red-600">{inputError?.message} here</span>
                   )}
                 </FormDescription>
                 <FormMessage />
               </FormItem>
 
               {userContact && (
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 mt-6">
                   <Button
                     onClick={() => {
                       transferForm.setValue("email", "");
@@ -152,8 +154,8 @@ export const TransferModalFirstStep = ({
                       {inputError?.message}
                     </span>
                   ) : (
-                    <span className="text-muted-foreground text-sm px-3">
-                      (*) Asegúrate de que sea el destinatario correcto
+                    <span className="text-muted-foreground text-sm">
+                      (*) Make sure it is the correct recipient
                     </span>
                   )}
                 </div>
@@ -197,12 +199,12 @@ export const TransferModalFirstStep = ({
           control={transferForm.control}
           name="amount"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Cantidad que deseas transferir</FormLabel>
+            <FormItem className="flex flex-col gap-1 !m-0">
+              <FormLabel>Amount to transfer</FormLabel>
               <div className="m-0 h-24 bg-neutral-700 rounded-lg flex flex-col justify-between py-2 px-3">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground text-sm">
-                    Saldo disponible:
+                    Available balance:
                   </span>
                   <div className="flex items-center gap-2">
                     <span className="text-muted-foreground text-sm">
@@ -215,7 +217,7 @@ export const TransferModalFirstStep = ({
                   <div className="flex text-3xl gap-1">
                     $
                     <Input
-                      placeholder="Cantidad de ETH"
+                      placeholder="Amount of ETH"
                       className="border-none h-fit p-0 !text-3xl focus:outline-none focus:ring-0 bg-transparent appearance-none [::-webkit-outer-spin-button]:appearance-none [::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
                       type="number"
                       step="any"
@@ -229,7 +231,7 @@ export const TransferModalFirstStep = ({
           )}
         />
         <Button type="submit" className="w-full">
-          Siguiente
+          Next
         </Button>
       </form>
     </Form>

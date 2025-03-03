@@ -27,17 +27,17 @@ export default async function PrivatePage() {
           <div className="p-6 flex flex-col justify-between bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 rounded-xl h-full">
             <div className="font-bold">
               <p className="text-3xl">
-                Bienvenido, <span className="">{user_metadata.first_name}</span>
+                Welcome, <span className="">{user_metadata.first_name}</span>
                 !
                 <br />
               </p>
               <span className="text-blue-50 text-opacity-70 font-thin text-md">
-                Este estu saldo disponible en tu billetera
+                This is your balance
               </span>
             </div>
             <section className="space-y-1 rounded-lg">
               <h3 className="text-blue-50 text-lg flex flex-col gap-2 font-semibold text-opacity-50">
-                Saldo
+                Balance
               </h3>
               <div className="flex justify-between place-items-end">
                 <p className="text-4xl font-semibold">

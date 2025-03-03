@@ -1,10 +1,21 @@
-export interface Contact {
+export interface Profile {
   id: string;
   first_name: string;
   last_name: string;
   email: string;
-  phone?: string;
+  phone_number?: string;
+  wallet_address: string;
   lastTransaction?: Transaction;
+  avatarUrl?: string;
+}
+
+export interface Contact {
+  id: string;
+  contact_name: string;
+  contact_last_name: string;
+  contact_email: string;
+  phone_number?: string;
+  wallet_address: string;
   avatarUrl?: string;
 }
 

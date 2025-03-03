@@ -6,12 +6,12 @@ import { z } from "zod";
  * - Enforce a minimum positive amount (e.g. > 0).
  */
 export const transferFormSchema = z.object({
-  email: z.string().email({ message: "Ingresa un email válido." }),
+  email: z.string().email({ message: "" }),
   amount: z.coerce
     .number({
-      invalid_type_error: "Debes ingresar un número para la cantidad.",
+      invalid_type_error: "Enter a number for the amount.",
     })
-    .positive("La cantidad debe ser mayor que 0."),
+    .positive("The amount must be greater than 0."),
 });
 
 /**
@@ -20,5 +20,22 @@ export const transferFormSchema = z.object({
 export const passwordFormSchema = z.object({
   password: z
     .string()
-    .min(6, { message: "La contraseña debe tener al menos 6 caracteres." }),
+    .min(6, { message: "The password must be at least 6 characters long." }),
+});
+
+export const transactionReceiptSchema = z.object({
+  blockHash: z.string(),
+  blockNumber: z.bigint(),
+  contractAddress: z.string().nullable(),
+  cumulativeGasUsed: z.bigint(),
+  effectiveGasPrice: z.bigint(),
+  from: z.string(),
+  gasUsed: z.bigint(),
+  logs: z.array(z.unknown()),
+  logsBloom: z.string(),
+  status: z.string(),
+  to: z.string().nullable(),
+  transactionHash: z.string(),
+  transactionIndex: z.number(),
+  type: z.string(),
 });

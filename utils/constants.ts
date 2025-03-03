@@ -1,30 +1,30 @@
 export const INPUT_ERROR_TYPES = {
   user_not_found: {
-    message: "No se encontraron usuarios con ese email",
+    message: "We couldn't find a user with that email.",
     type: "error",
   },
   invalid_email: {
-    message: "Ingresa un email válido",
+    message: "Enter a valid email.",
     type: "error",
   },
   invalid_amount: {
-    message: "Debes ingresar un número para la cantidad",
+    message: "Enter a number for the amount.",
     type: "error",
   },
   insufficient_balance: {
-    message: "No tienes suficiente balance para transferir",
+    message: "You don't have enough balance to transfer.",
     type: "error",
   },
   transaction_failed: {
-    message: "Ocurrió un error en la transferencia",
+    message: "An error occurred during the transfer.",
     type: "error",
   },
   password_incorrect: {
-    message: "La contraseña es incorrecta",
+    message: "The password is incorrect.",
     type: "error",
   },
   same_account: {
-    message: "No puedes transferir fondos a tu propia cuenta",
+    message: "You can't transfer funds to your own account.",
     type: "error",
   },
 };

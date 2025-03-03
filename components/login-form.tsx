@@ -21,10 +21,10 @@ export default function LoginForm() {
   const supabase = createClient();
 
   const loginFormSchema = z.object({
-    email: z.string().email({ message: "Ingresa un email válido." }),
+    email: z.string().email({ message: "Enter a valid email." }),
     password: z
       .string()
-      .min(8, { message: "La contraseña debe tener al menos 8 caracteres." }),
+      .min(8, { message: "The password must be at least 8 characters long." }),
   });
 
   const { register } = useForm<z.infer<typeof loginFormSchema>>({
@@ -40,7 +40,7 @@ export default function LoginForm() {
     if (!data || data.length === 0) {
       setInputError({
         type: "email",
-        message: "No se encontró un usuario con ese email.",
+        message: "We couldn't find a user with that email.",
       });
       return;
     }
@@ -54,7 +54,7 @@ export default function LoginForm() {
       if (result.status === 400) {
         setInputError({
           type: "password",
-          message: "La contraseña es incorrecta.",
+          message: "The password is incorrect.",
         });
       }
       return;
@@ -72,11 +72,11 @@ export default function LoginForm() {
         </Link>
         {inputError.type === "email" || inputError.type === "password" ? (
           <p className={`text-red-400 text-sm}`}>
-            Error iniciando sesión, por favor intenta de nuevo
+            Error logging in, please try again
           </p>
         ) : (
           <p className="max-w-md text-center">
-            Inicia sesión para ver tus Lucas
+            Login to see your Lucas
           </p>
         )}
       </div>

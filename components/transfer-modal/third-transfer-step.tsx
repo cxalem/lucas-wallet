@@ -2,8 +2,6 @@
 
 import { UseFormReturn } from "react-hook-form";
 import { z } from "zod";
-
-import { DialogClose } from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -17,31 +15,34 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { passwordFormSchema } from "@/utils/schemas";
 import { TransferStateEnum } from "@/types";
+
 type TransferModalThirdStepProps = {
   passwordForm: UseFormReturn<z.infer<typeof passwordFormSchema>>;
   handlePasswordFormSubmit: (
     values: z.infer<typeof passwordFormSchema>
   ) => void;
   setTransferState: (state: TransferStateEnum) => void;
+  isSending: boolean;
 };
 
 export const TransferModalThirdStep = ({
   passwordForm,
   handlePasswordFormSubmit,
   setTransferState,
+  isSending,
 }: TransferModalThirdStepProps) => {
   return (
     <Form {...passwordForm}>
       <form
         onSubmit={passwordForm.handleSubmit(handlePasswordFormSubmit)}
-        className="space-y-6"
+        className="space-y-6 mt-4"
       >
         <FormField
           control={passwordForm.control}
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Contraseña</FormLabel>
+              <FormLabel>Password</FormLabel>
               <FormControl>
                 <Input
                   type="password"
@@ -50,23 +51,24 @@ export const TransferModalThirdStep = ({
                 />
               </FormControl>
               <FormDescription>
-                Ingresa la contraseña de tu cuenta para confirmar la
-                transferencia.
+                Enter your password to confirm the transfer.
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        <div className="flex gap-4">
-          <Button type="submit">Confirmar</Button>
-          <DialogClose asChild>
-            <Button
-              variant="secondary"
-              onClick={() => setTransferState(TransferStateEnum.Idle)}
-            >
-              Cancelar
-            </Button>
-          </DialogClose>
+        <div className="flex gap-4 w-full">
+          <Button
+            variant="secondary"
+            className="w-full"
+            onClick={() => setTransferState(TransferStateEnum.Validating)}
+          >
+            Back
+          </Button>
+
+          <Button type="submit" className="w-full" disabled={isSending}>
+            {isSending ? "Confirming..." : "Confirm"}
+          </Button>
         </div>
       </form>
     </Form>
