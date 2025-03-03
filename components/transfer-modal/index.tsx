@@ -73,9 +73,10 @@ export default function TransferModal({
     null
   );
 
-  const [transactionDetails, setTransactionDetails] = useState<z.infer<
-    typeof transactionReceiptSchema
-  > | null>(null);
+  /* ********** I'll need this later, that's why I'm keeping it here ********** */
+  // const [transactionDetails, setTransactionDetails] = useState<z.infer<
+  //   typeof transactionReceiptSchema
+  // > | null>(null);
 
   const [isSending, setIsSending] = useState(false);
 
@@ -184,7 +185,6 @@ export default function TransferModal({
       >;
 
       console.log("Transferencia exitosa, hash:", txDetails);
-      setTransactionDetails(txDetails);
       setTransactionHash(tx);
 
       const createdAt = new Date().toISOString();
@@ -364,7 +364,6 @@ export default function TransferModal({
                     onClick={() => {
                       setTransferState(TransferStateEnum.Idle);
                       setTransactionHash(null);
-                      setTransactionDetails(null);
                       setRecipient(null);
                       setUserBalance(null);
                       setUserContact(null);
