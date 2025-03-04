@@ -1,4 +1,4 @@
-export interface Profile {
+export interface Contact {
   id: string;
   first_name: string;
   last_name: string;
@@ -6,16 +6,6 @@ export interface Profile {
   phone_number?: string;
   wallet_address: string;
   lastTransaction?: Transaction;
-  avatarUrl?: string;
-}
-
-export interface Contact {
-  id: string;
-  contact_name: string;
-  contact_last_name: string;
-  contact_email: string;
-  phone_number?: string;
-  wallet_address: string;
   avatarUrl?: string;
 }
 

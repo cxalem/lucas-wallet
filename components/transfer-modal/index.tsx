@@ -11,7 +11,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
@@ -23,7 +22,7 @@ import {
   transferFormSchema,
   transactionReceiptSchema,
 } from "@/utils/schemas";
-import { Contact, Profile } from "@/types";
+import { Contact } from "@/types";
 import { TransferModalFirstStep } from "./first-transfer-step";
 import { TransferModalSecondStep } from "./second-transfer-step";
 import { TransferModalThirdStep } from "./third-transfer-step";
@@ -35,14 +34,12 @@ import {
   getUserBalance,
 } from "./actions";
 import { ContactCard } from "../contacts/contact-card";
-import { Separator } from "@radix-ui/react-separator";
-import { CopyHash } from "../copy-hash";
-import { UserRoundPen } from "lucide-react";
 import { addContact, getContact } from "../contacts/actions";
+import { TransferSuccess } from "./success-step";
 
 type TransferModalProps = {
   type?: "transfer" | "contact";
-  contact?: Profile;
+  contact?: Contact;
 };
 
 export default function TransferModal({
@@ -86,9 +83,11 @@ export default function TransferModal({
   >(null);
 
   // If user clicked on a known contact
-  const [userContact, setUserContact] = useState<Profile | null>(null);
+  const [userContact, setUserContact] = useState<Contact | null>(null);
 
-  const [isContactAdded, setIsContactAdded] = useState<boolean>(false);
+  const [isContactAdded, setIsContactAdded] = useState<boolean | undefined>(
+    undefined
+  );
 
   // React Hook Form
   const transferForm = useForm<z.infer<typeof transferFormSchema>>({
@@ -246,12 +245,12 @@ export default function TransferModal({
     const loggedUser = await supabase.auth.getUser();
 
     if (!loggedUser?.data.user) {
-      console.error("No hay usuario autenticado.");
+      console.error("There is no logged user");
       return;
     }
 
     if (!userContact) {
-      console.error("No hay contacto seleccionado.");
+      console.error("There is no selected contact");
       return;
     }
 
@@ -264,16 +263,31 @@ export default function TransferModal({
   };
 
   const isContact = async () => {
-    if (!userContact) {
-      console.error("No hay contacto seleccionado.");
+    const loggedUser = await supabase.auth.getUser();
+
+    if (!loggedUser?.data.user) {
+      console.error("There is no logged user");
       return;
     }
 
-    const contact = await getContact(userContact.id);
-
-    if (contact) {
-      setIsContactAdded(true);
+    if (!userContact) {
+      console.error("There is no selected contact");
+      return;
     }
+
+    const contacts = await getContact(loggedUser.data.user.id);
+
+    if (!contacts) {
+      console.error("There is no contact");
+      setIsContactAdded(false);
+      return;
+    }
+
+    const isContact = contacts?.some(
+      (c) => c.wallet_address === userContact.wallet_address
+    );
+    setIsContactAdded(isContact);
+    return isContact;
   };
 
   return (
@@ -330,63 +344,24 @@ export default function TransferModal({
             />
           ) : transferState === "success" ? (
             /* ----------------------- Success ----------------------- */
-            <div className="flex flex-col gap-4 w-full">
-              <div className="flex flex-col mt-4">
-                <span className="text-zinc-50 text-opacity-70">
-                  You&apos;ve sent
-                </span>
-                <span className="text-zinc-50 font-bold text-2xl">
-                  {transferData?.amount} ETH
-                </span>
-              </div>
-              <div className="flex gap-2 items-end">
-                <span className="text-zinc-50 text-opacity-70">To:</span>
-                <span className="text-zinc-50 font-bold text-xl">
-                  {recipient?.first_name} {recipient?.last_name}
-                </span>
-              </div>
-
-              <div className="flex px-1 w-full mt-2">
-                <Separator className="border border-neutral-50/40 w-full" />
-              </div>
-
-              <div className="flex justify-between gap-2 px-1">
-                <span className="text-zinc-50/70">Transaction hash:</span>
-                <span title={transactionHash ?? ""} className="text-zinc-50">
-                  <CopyHash hash={transactionHash ?? ""} />
-                </span>
-              </div>
-
-              <div className="flex w-full gap-3">
-                <DialogClose asChild>
-                  <Button
-                    className="w-full"
-                    onClick={() => {
-                      setTransferState(TransferStateEnum.Idle);
-                      setTransactionHash(null);
-                      setRecipient(null);
-                      setUserBalance(null);
-                      setUserContact(null);
-                      setTransferData(null);
-                      setInputError(null);
-                      transferForm.reset();
-                      passwordForm.reset();
-                    }}
-                  >
-                    Close
-                  </Button>
-                </DialogClose>
-                {!isContactAdded && (
-                  <Button
-                    onClick={handleAddContact}
-                    variant={"secondary"}
-                    className="flex items-center"
-                  >
-                    <UserRoundPen className="w-4 h-4" /> Add to contacts
-                  </Button>
-                )}
-              </div>
-            </div>
+            <TransferSuccess
+              onClick={() => {
+                setTransferState(TransferStateEnum.Idle);
+                setTransactionHash(null);
+                setRecipient(null);
+                setUserBalance(null);
+                setUserContact(null);
+                setTransferData(null);
+                setInputError(null);
+                transferForm.reset();
+                passwordForm.reset();
+              }}
+              transferData={transferData}
+              recipient={recipient}
+              transactionHash={transactionHash}
+              isContactAdded={isContactAdded}
+              handleAddContact={handleAddContact}
+            />
           ) : transferState === "error" ? (
             /* ----------------------- Error ----------------------- */
             <div className="flex flex-col items-center gap-4">

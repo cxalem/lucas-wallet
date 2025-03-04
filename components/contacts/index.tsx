@@ -6,10 +6,18 @@ import {
 } from "@/components/ui/card";
 import { ContactCardContent } from "./contact-card-content";
 import { getContacts } from "./actions";
-import { Profile } from "@/types";
-
+import { Contact } from "@/types";
+import { createClient } from "@/utils/supabase/server";
 export default async function ContactsList() {
-  const contacts = (await getContacts()) as Profile[];
+  const supabase = await createClient();
+  const loggedUser = await supabase.auth.getUser();
+
+  if (!loggedUser?.data.user) {
+    console.error("No user found");
+    return null;
+  }
+
+  const contacts = (await getContacts(loggedUser.data.user)) as Contact[];
 
   return (
     <Card className="w-full max-w-3xl mx-auto bg-gradient-to-b from-neutral-900/70 via-neutral-800/70 to-neutral-900/70 backdrop-blur-md rounded-xl">

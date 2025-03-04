@@ -4,10 +4,10 @@ import { useState } from "react";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { CardContent } from "@/components/ui/card";
-import { Profile } from "@/types";
+import { Contact } from "@/types";
 import TransferModal from "../transfer-modal";
 
-export const ContactCardContent = ({ contacts }: { contacts: Profile[] }) => {
+export const ContactCardContent = ({ contacts }: { contacts: Contact[] }) => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const sortedContacts = [...contacts].sort((a, b) => {

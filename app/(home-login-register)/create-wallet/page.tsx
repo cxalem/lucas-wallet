@@ -14,58 +14,64 @@ export default function CreateWalletPage() {
                 Lucas <br /> Wallet
               </h1>
             </Link>
-            <p className="text-center text-sm">
-              Crea tu cuenta para empezar a recibir dinero.
+            <p className="text-center text-sm text-blue-50/70">
+              Create your account to start <br /> receiving and sending money.
             </p>
           </div>
           <div className="flex flex-col gap-2 w-full max-w-sm">
             <label htmlFor="email">Email:</label>
             <Input
               className="bg-neutral-700 border-none w-full"
-              placeholder="Ingresa tu email"
+              placeholder="Enter your email"
               id="email"
               name="email"
               type="email"
               required
             />
-            <label htmlFor="password">Contraseña:</label>
+            <label htmlFor="password">Password:</label>
             <Input
               className="bg-neutral-700 border-none w-full"
-              placeholder="Ingresa tu contraseña"
+              placeholder="Enter your password"
               id="password"
               name="password"
               type="password"
               required
             />
-            <label htmlFor="first_name">Nombre:</label>
-            <Input
-              className="bg-neutral-700 border-none w-full"
-              placeholder="Ingresa tu nombre"
-              id="first_name"
-              name="first_name"
-              type="text"
-              required
-            />
-            <label htmlFor="last_name">Apellido:</label>
-            <Input
-              className="bg-neutral-700 border-none w-full"
-              placeholder="Ingresa tu apellido"
-              id="last_name"
-              name="last_name"
-              type="text"
-              required
-            />
+            <div className="flex gap-2 w-full ">
+              <div className="w-full space-y-1">
+                <label htmlFor="first_name">First Name:</label>
+                <Input
+                  className="bg-neutral-700 border-none w-full"
+                  placeholder="Enter your first name"
+                  id="first_name"
+                  name="first_name"
+                  type="text"
+                  required
+                />
+              </div>
+              <div className="w-full space-y-1">
+                <label htmlFor="last_name">Last Name:</label>
+                <Input
+                  className="bg-neutral-700 border-none w-full"
+                  placeholder="Enter your last name"
+                  id="last_name"
+                  name="last_name"
+                  type="text"
+                  required
+                />
+              </div>
+            </div>
           </div>
           <Button
             className="bg-violet-600 hover:bg-violet-700 w-full text-blue-50 rounded-full max-w-sm"
             formAction={signup}
           >
-            Crear cuenta
+            Create account
           </Button>
         </form>
       </div>
       <p>
-        Ya tienes una cuenta? <Link href="/login">Inicia sesión</Link>
+        Already have an account? <Link href="/login">Login</Link>
       </p>
     </div>
   );

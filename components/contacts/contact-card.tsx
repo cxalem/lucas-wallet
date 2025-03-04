@@ -30,7 +30,7 @@ export const ContactCard = ({
   return (
     <DialogTrigger
       onClick={() => {
-        transferForm.setValue("email", contact.contact_email);
+        transferForm.setValue("email", contact.email);
         getUserBalance().then((balance) => {
           if (balance) {
             setUserBalance(balance);
@@ -38,9 +38,9 @@ export const ContactCard = ({
         });
         setUserContact({
           id: contact.id,
-          first_name: contact.contact_name,
-          last_name: contact.contact_last_name,
-          email: contact.contact_email,
+          first_name: contact.first_name,
+          last_name: contact.last_name,
+          email: contact.email,
           wallet_address: contact.wallet_address,
           phone_number: contact.phone_number,
           avatarUrl: contact.avatarUrl,
@@ -53,22 +53,20 @@ export const ContactCard = ({
           {contact.avatarUrl ? (
             <Image
               src={contact.avatarUrl || "/placeholder.svg"}
-              alt={`${contact.contact_name} ${contact.contact_last_name}`}
+              alt={`${contact.first_name} ${contact.last_name}`}
               width={40}
               height={40}
             />
           ) : (
             <AvatarFallback>
-              {getInitials(contact.contact_name, contact.contact_last_name)}
+              {getInitials(contact.first_name, contact.last_name)}
             </AvatarFallback>
           )}
         </Avatar>
         <div className="flex flex-col text-start">
-          <span className="text-sm text-muted-foreground">
-            {contact.contact_email}
-          </span>
+          <span className="text-sm text-muted-foreground">{contact.email}</span>
           <span className="font-medium">
-            {contact.contact_name} {contact.contact_last_name}
+            {contact.first_name} {contact.last_name}
           </span>
         </div>
       </div>

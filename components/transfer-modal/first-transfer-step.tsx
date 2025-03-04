@@ -19,14 +19,14 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/client";
 import { INPUT_ERROR_TYPES } from "@/utils/constants";
 import { transferFormSchema } from "@/utils/schemas";
-import { Profile } from "@/types";
+import { Contact } from "@/types";
 import { XIcon } from "lucide-react";
 import { useDebounce } from "@/lib/hooks";
 
 type TransferModalFirstStepProps = {
   transferForm: UseFormReturn<z.infer<typeof transferFormSchema>>;
-  userContact: Profile | null;
-  setUserContact: (contact: Profile | null) => void;
+  userContact: Contact | null;
+  setUserContact: (contact: Contact | null) => void;
   handleTransferFormSubmit: (
     values: z.infer<typeof transferFormSchema>
   ) => void;
@@ -46,7 +46,7 @@ export const TransferModalFirstStep = ({
   setInputError,
 }: TransferModalFirstStepProps) => {
   const [query, setQuery] = useState<string>("");
-  const [searchResults, setSearchResults] = useState<Profile[]>([]);
+  const [searchResults, setSearchResults] = useState<Contact[]>([]);
   const [isSearching, setIsSearching] = useState<boolean>(false);
 
   const supabase = createClient();
@@ -123,7 +123,9 @@ export const TransferModalFirstStep = ({
                   {!inputError ? (
                     "Add the email of the account you want to transfer to."
                   ) : (
-                    <span className="text-red-600">{inputError?.message} here</span>
+                    <span className="text-red-600">
+                      {inputError?.message} here
+                    </span>
                   )}
                 </FormDescription>
                 <FormMessage />
