@@ -3,7 +3,18 @@ import { signup } from "./actions";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 
-export default function CreateWalletPage() {
+export default function CreateWalletPage({
+  searchParams,
+}: {
+  searchParams: { address: string };
+}) {
+  const address = searchParams.address;
+
+  if (address) {
+    
+
+  }
+
   return (
     <div className="min-h-screen flex flex-col gap-4 items-center mt-16">
       <div className="bg-gradient-to-b from-red-600 via-yellow-600 to-purple-600 p-[1px] rounded-lg w-full max-w-xl shadow-2xl shadow-yellow-600/30 ">

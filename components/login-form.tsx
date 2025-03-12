@@ -63,7 +63,7 @@ export default function LoginForm() {
   };
 
   return (
-    <form className="flex flex-col gap-6 items-center justify-center w-full mx-auto bg-neutral-800 px-10 md:px-20 py-16 rounded-lg h-full">
+    <form className="flex flex-col gap-6 items-center justify-center ">
       <div className="flex flex-col gap-2 items-center">
         <Link href="/" className="text-lg">
           <h1 className="text-4xl/9 font-black uppercase text-center">

@@ -2,6 +2,7 @@ import { createPublicClient, createWalletClient, http } from "viem";
 import { createConfig } from "wagmi";
 import { privateKeyToAccount } from "viem/accounts";
 import { lineaSepolia } from "viem/chains";
+import { metaMask } from 'wagmi/connectors'
 
 export const client = createPublicClient({
   chain: lineaSepolia,
@@ -21,4 +22,5 @@ export const config = createConfig({
     [lineaSepolia.id]: http(),
   },
   ssr: true,
+  connectors: [metaMask()],
 });

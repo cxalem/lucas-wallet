@@ -16,7 +16,7 @@ export default function LoginButton({
         formAction={handleLogin}
         className="bg-violet-600 px-10 py-2 rounded-full text-zinc-50 font-medium hover:bg-violet-700 w-full"
       >
-        {isLoading ? "Cargando..." : "Inicia sesión"}
+        {isLoading ? "Loading..." : "Login"}
       </Button>
     );
   }
@@ -24,7 +24,7 @@ export default function LoginButton({
   return (
     <Link href="/login">
       <Button className="bg-violet-600 px-10 py-2 rounded-full text-zinc-50 font-medium hover:bg-violet-700 shadow-lg">
-        Envía dinero
+        Send money
       </Button>
     </Link>
   );
