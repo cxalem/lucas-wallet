@@ -17,10 +17,10 @@ export default async function Home() {
         <div className="flex flex-col gap-12 items-center">
           <div className="flex flex-col">
             <h1 className="text-4xl md:text-6xl font-bold md:font-black text-center">
-              Envía y Recibe dinero
+              Send and Receive Money
             </h1>
             <p className="text-center text-3xl md:text-6xl font-thin">
-              Cuando quieras, donde quieras
+              When you want, where you want
             </p>
           </div>
           <div className="p-2 w-full flex justify-center">
@@ -28,7 +28,7 @@ export default async function Home() {
               <div className="flex flex-col gap-4 items-center bg-neutral-800 p-6 rounded-lg w-full max-w-xl">
                 <div className="flex flex-col gap-3 bg-neutral-600 p-4 rounded-lg w-full">
                   <span className="text-lg opacity-55 font-medium">
-                    Saldo disponible
+                    Available balance
                   </span>
                   <div className="flex justify-between items-end">
                     <span className="text-2xl font-bold">$23.877</span>
@@ -39,11 +39,11 @@ export default async function Home() {
                 </div>
                 <Link href="/create-wallet" className="w-full">
                   <Button className="w-full rounded-full bg-violet-600 px-10 py-2 text-zinc-50 font-medium hover:bg-violet-700">
-                    Empieza ahora
+                    Start now
                   </Button>
                 </Link>
                 <p className="text-sm text-center">
-                  Necesitas ingresar a tu cuenta para empezar a recibir dinero.
+                  You need to enter your account to start receiving money.
                 </p>
               </div>
             </div>
