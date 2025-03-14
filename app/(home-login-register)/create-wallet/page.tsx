@@ -37,30 +37,15 @@ export default function CreateWalletPage() {
               type="password"
               required
             />
-            <div className="flex gap-2 w-full ">
-              <div className="w-full space-y-1">
-                <label htmlFor="first_name">First Name:</label>
-                <Input
-                  className="bg-neutral-700 border-none w-full"
-                  placeholder="Enter your first name"
-                  id="first_name"
-                  name="first_name"
-                  type="text"
-                  required
-                />
-              </div>
-              <div className="w-full space-y-1">
-                <label htmlFor="last_name">Last Name:</label>
-                <Input
-                  className="bg-neutral-700 border-none w-full"
-                  placeholder="Enter your last name"
-                  id="last_name"
-                  name="last_name"
-                  type="text"
-                  required
-                />
-              </div>
-            </div>
+            <label htmlFor="user_name">Username:</label>
+            <Input
+              className="bg-neutral-700 border-none w-full"
+              placeholder="Enter your username"
+              id="user_name"
+              name="user_name"
+              type="text"
+              required
+            />
           </div>
           <Button
             className="bg-violet-600 hover:bg-violet-700 w-full text-blue-50 rounded-full max-w-sm"
