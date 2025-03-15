@@ -1,1 +1,1 @@
-export type SupportedLocales = "en" | "fr" | "es" | "pcm";
+export type SupportedLocales = "en" | "fr" | "es" | "pcm" | "bn";

@@ -6,4 +6,5 @@ export const { getI18n, getScopedI18n, getStaticParams, getCurrentLocale } =
     es: () => import("./es"),
     pcm: () => import("./pcm"),
     fr: () => import("./fr"),
+    bn: () => import("./bn"),
   });

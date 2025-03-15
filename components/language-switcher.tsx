@@ -15,6 +15,7 @@ const languages: Record<SupportedLocales, string> = {
   fr: "Français",
   es: "Español",
   pcm: "Pidgin",
+  bn: "বাংলা",
 };
 
 export default function LanguageSwitcher() {
