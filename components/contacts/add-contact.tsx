@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Dialog,
   DialogContent,
@@ -6,17 +8,19 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useI18n } from "@/locales/client";
 
 export const AddContact = () => {
+  const t = useI18n();
+
   return (
     <Dialog>
-      <DialogTrigger>Add Contact</DialogTrigger>
+      <DialogTrigger>{t("contacts.add")}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Are you absolutely sure?</DialogTitle>
+          <DialogTitle>{t("contacts.dialog.title")}</DialogTitle>
           <DialogDescription>
-            This action cannot be undone. This will permanently delete your
-            account and remove your data from our servers.
+            {t("contacts.dialog.description")}
           </DialogDescription>
         </DialogHeader>
       </DialogContent>

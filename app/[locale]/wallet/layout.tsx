@@ -3,6 +3,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "@/app/globals.css";
 import { SignOutButton } from "@/components/sing-out-button";
 import Link from "next/link";
+import { I18nProviderClient } from "@/locales/client";
+import { getCurrentLocale } from "@/locales/server";
+import LanguageSwitcher from "@/components/language-switcher";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,11 +22,12 @@ export const metadata: Metadata = {
   description: "La billetera digital de toda Venezuela",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getCurrentLocale();
   return (
     <main
       className={`${geistSans.variable} ${geistMono.variable} relative z-50 dark:bg-neutral-950 dark:text-blue-50 bg-neutral-100 text-foreground antialiased text-zinc-800 min-h-screen max-w-[100vw] overflow-x-hidden p-2 md:p-0`}
@@ -41,7 +45,12 @@ export default function RootLayout({
             Lucas <br /> Wallet
           </h1>
         </Link>
-        <SignOutButton />
+        <I18nProviderClient locale={locale}>
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher />
+            <SignOutButton />
+          </div>
+        </I18nProviderClient>
       </nav>
       <section className="max-w-6xl mx-auto">{children}</section>
     </main>

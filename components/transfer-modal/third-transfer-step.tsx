@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { passwordFormSchema } from "@/utils/schemas";
 import { TransferStateEnum } from "@/types";
+import { useI18n } from "@/locales/client";
 
 type TransferModalThirdStepProps = {
   passwordForm: UseFormReturn<z.infer<typeof passwordFormSchema>>;
@@ -31,6 +32,8 @@ export const TransferModalThirdStep = ({
   setTransferState,
   isSending,
 }: TransferModalThirdStepProps) => {
+  const t = useI18n();
+
   return (
     <Form {...passwordForm}>
       <form
@@ -42,16 +45,16 @@ export const TransferModalThirdStep = ({
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>{t("transfer.password.label")}</FormLabel>
               <FormControl>
                 <Input
                   type="password"
-                  placeholder="Escribe tu contraseña"
+                  placeholder={t("transfer.password.placeholder")}
                   {...field}
                 />
               </FormControl>
               <FormDescription>
-                Enter your password to confirm the transfer.
+                {t("transfer.password.description")}
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -63,11 +66,13 @@ export const TransferModalThirdStep = ({
             className="w-full"
             onClick={() => setTransferState(TransferStateEnum.Validating)}
           >
-            Back
+            {t("transfer.button.back")}
           </Button>
 
           <Button type="submit" className="w-full" disabled={isSending}>
-            {isSending ? "Confirming..." : "Confirm"}
+            {isSending
+              ? t("transfer.button.confirming")
+              : t("transfer.button.confirm")}
           </Button>
         </div>
       </form>

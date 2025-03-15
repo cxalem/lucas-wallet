@@ -22,6 +22,7 @@ import { transferFormSchema } from "@/utils/schemas";
 import { Contact } from "@/types";
 import { XIcon } from "lucide-react";
 import { useDebounce } from "@/lib/hooks";
+import { useI18n } from "@/locales/client";
 
 type TransferModalFirstStepProps = {
   transferForm: UseFormReturn<z.infer<typeof transferFormSchema>>;
@@ -45,6 +46,7 @@ export const TransferModalFirstStep = ({
   userBalance,
   setInputError,
 }: TransferModalFirstStepProps) => {
+  const t = useI18n();
   const [query, setQuery] = useState<string>("");
   const [searchResults, setSearchResults] = useState<Contact[]>([]);
   const [isSearching, setIsSearching] = useState<boolean>(false);
@@ -73,12 +75,12 @@ export const TransferModalFirstStep = ({
       .limit(10);
 
     if (error) {
-      console.error("Error getting user", error);
+      console.error(t("transfer.search.error"), error);
       return;
     }
 
     if (!data || data.length === 0) {
-      console.log("No users found with that email.");
+      console.log(t("transfer.search.noResults"));
       setSearchResults([]);
       return;
     }
@@ -105,12 +107,12 @@ export const TransferModalFirstStep = ({
                   userContact ? "hidden" : "flex flex-col gap-2"
                 } space-y-0 justify-between mt-6`}
               >
-                <FormLabel>Email</FormLabel>
+                <FormLabel>{t("transfer.email.label")}</FormLabel>
                 <FormControl>
                   <Input
                     autoComplete="off"
                     onFocus={() => setIsSearching(true)}
-                    placeholder="Correo del destinatario"
+                    placeholder={t("transfer.email.placeholder")}
                     value={userContact?.email || field.value}
                     onChange={(e) => {
                       field.onChange(e);
@@ -121,10 +123,12 @@ export const TransferModalFirstStep = ({
                 </FormControl>
                 <FormDescription>
                   {!inputError ? (
-                    "Add the email of the account you want to transfer to."
+                    t("transfer.email.description")
                   ) : (
                     <span className="text-red-600">
-                      {inputError?.message} here
+                      {t("transfer.email.error", {
+                        message: inputError?.message,
+                      })}
                     </span>
                   )}
                 </FormDescription>
@@ -157,7 +161,7 @@ export const TransferModalFirstStep = ({
                     </span>
                   ) : (
                     <span className="text-muted-foreground text-sm">
-                      (*) Make sure it is the correct recipient
+                      {t("transfer.recipient.warning")}
                     </span>
                   )}
                 </div>
@@ -202,24 +206,26 @@ export const TransferModalFirstStep = ({
           name="amount"
           render={({ field }) => (
             <FormItem className="flex flex-col gap-1 !m-0">
-              <FormLabel>Amount to transfer</FormLabel>
+              <FormLabel>{t("transfer.amount.label")}</FormLabel>
               <div className="m-0 h-24 bg-neutral-700 rounded-lg flex flex-col justify-between py-2 px-3">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground text-sm">
-                    Available balance:
+                    {t("transfer.amount.balance")}
                   </span>
                   <div className="flex items-center gap-2">
                     <span className="text-muted-foreground text-sm">
                       {userBalance}
                     </span>
-                    <span className="text-muted-foreground text-sm">ETH</span>
+                    <span className="text-muted-foreground text-sm">
+                      {t("wallet.crypto")}
+                    </span>
                   </div>
                 </div>
                 <FormControl>
                   <div className="flex text-3xl gap-1">
                     $
                     <Input
-                      placeholder="Amount of ETH"
+                      placeholder={t("transfer.amount.placeholder")}
                       className="border-none h-fit p-0 !text-3xl focus:outline-none focus:ring-0 bg-transparent appearance-none [::-webkit-outer-spin-button]:appearance-none [::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
                       type="number"
                       step="any"
@@ -233,7 +239,7 @@ export const TransferModalFirstStep = ({
           )}
         />
         <Button type="submit" className="w-full">
-          Next
+          {t("transfer.button.next")}
         </Button>
       </form>
     </Form>
