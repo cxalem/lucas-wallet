@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { createClient } from "@/utils/supabase/server";
-import { createWallet } from "./utils";
+import { createSolanaWallet } from "./utils";
 import { encryptData } from "@/app/security/encrypt";
 
 const signupSchema = z.object({
@@ -34,8 +34,9 @@ export async function signup(formData: FormData) {
   const supabase = await createClient();
   const { data: existingUserData, error: existingUserError } = await supabase
     .from("profiles")
-    .select("email")
+    .select("email, user_name")
     .eq("email", email)
+    .eq("user_name", user_name)
     .single();
 
   if (existingUserError && existingUserError.code !== "PGRST116") {
@@ -51,7 +52,7 @@ export async function signup(formData: FormData) {
     return;
   }
 
-  const { address, privateKey, mnemonic } = createWallet();
+  const { address, privateKey, mnemonic } = createSolanaWallet();
 
   const { salt, iv, ciphertext } = await encryptData(
     password,

@@ -15,12 +15,10 @@ import {
 import { Button } from "@/components/ui/button";
 
 import { createClient } from "@/utils/supabase/client";
-import { walletClient } from "@/wallet.config";
 import { INPUT_ERROR_TYPES } from "@/utils/constants";
 import {
   passwordFormSchema,
   transferFormSchema,
-  transactionReceiptSchema,
 } from "@/utils/schemas";
 import { Contact } from "@/types";
 import { TransferModalFirstStep } from "./first-transfer-step";
@@ -30,12 +28,13 @@ import { TransferStateEnum } from "@/types";
 import {
   addTransactionToDb,
   decryptPrivateKey,
-  getTransactionDetails,
-  getUserBalance,
+  getUsdcBalance,
 } from "./actions";
 import { ContactCard } from "../contacts/contact-card";
 import { addContact, getContact } from "../contacts/actions";
 import { TransferSuccess } from "./success-step";
+import { transferSolana } from "@/utils/solana/helpers";
+import { Keypair, PublicKey } from "@solana/web3.js";
 
 type TransferModalProps = {
   type?: "transfer" | "contact";
@@ -60,15 +59,14 @@ export default function TransferModal({
 
   // Store the user (recipient) from DB
   const [recipient, setRecipient] = useState<{
-    wallet_address: `0x${string}`;
+    wallet_address: PublicKey;
     first_name: string;
+    user_name: string;
     last_name: string;
     email: string;
   } | null>(null);
 
-  const [transactionHash, setTransactionHash] = useState<`0x${string}` | null>(
-    null
-  );
+  const [transactionHash, setTransactionHash] = useState<string | null>(null);
 
   /* ********** I'll need this later, that's why I'm keeping it here ********** */
   // const [transactionDetails, setTransactionDetails] = useState<z.infer<
@@ -118,19 +116,19 @@ export default function TransferModal({
         .eq("email", values.email);
 
       if (error) {
-        console.error("Error al obtener el usuario", error);
+        console.error("Error getting user", error);
         setInputError(INPUT_ERROR_TYPES.user_not_found);
         return;
       }
 
       if (!data || data.length === 0) {
-        console.error("No se encontraron usuarios con ese email.");
+        console.error("No users found with that email.");
         setInputError(INPUT_ERROR_TYPES.user_not_found);
         return;
       }
 
       if (loggedUser?.data.user?.email === values.email) {
-        console.error("No puedes transferir fondos a tu propia cuenta.");
+        console.error("You can't transfer funds to your own account.");
         setInputError(INPUT_ERROR_TYPES.same_account);
         return;
       }
@@ -139,7 +137,7 @@ export default function TransferModal({
       setRecipient(data[0]);
       setTransferState(TransferStateEnum.Validating);
     } catch (err) {
-      console.error("Error inesperado al buscar usuario:", err);
+      console.error("Unexpected error searching user:", err);
       setTransferState(TransferStateEnum.Error);
     }
   }
@@ -148,7 +146,7 @@ export default function TransferModal({
     values: z.infer<typeof passwordFormSchema>
   ) {
     if (!transferData || !recipient) {
-      console.error("Datos incompletos para la transferencia.");
+      console.error("Incomplete data for transfer");
       return;
     }
     try {
@@ -157,7 +155,7 @@ export default function TransferModal({
 
       const loggedUser = await supabase.auth.getUser();
       if (!loggedUser?.data.user) {
-        console.error("No hay usuario autenticado.");
+        console.error("No authenticated user");
         return;
       }
 
@@ -169,33 +167,39 @@ export default function TransferModal({
 
       const privateKey = await decryptPrivateKey(values.password, userMetadata);
 
-      const signerClient = walletClient(privateKey as `0x${string}`);
+      const privateKeyUint8Array = Uint8Array.from(
+        Buffer.from(privateKey, "hex")
+      );
 
-      const weiAmount = BigInt(Math.floor(transferData.amount * 1e18));
+      const senderKeypair = Keypair.fromSecretKey(privateKeyUint8Array);
 
-      const tx = await signerClient.sendTransaction({
-        to: recipient.wallet_address,
-        value: weiAmount,
-        timeStamp: Math.floor(Date.now() / 1000),
-      });
+      const signature = await transferSolana(
+        senderKeypair,
+        recipient.wallet_address,
+        transferData.amount
+      );
 
-      const txDetails = (await getTransactionDetails(tx)) as z.infer<
-        typeof transactionReceiptSchema
-      >;
+      const txDetails = {
+        from: senderKeypair.publicKey.toBase58(),
+        to: recipient.wallet_address.toBase58(),
+        amount: transferData.amount,
+        signature: signature,
+      };
 
-      console.log("Transferencia exitosa, hash:", txDetails);
-      setTransactionHash(tx);
+      setTransactionHash(signature);
 
       const createdAt = new Date().toISOString();
+
+      console.log("txDetails", txDetails);
 
       await addTransactionToDb(
         txDetails,
         {
-          wallet_address: txDetails.from as `0x${string}`,
+          wallet_address: txDetails.from,
           email: loggedUser.data.user.email!,
         },
         {
-          wallet_address: txDetails.to as `0x${string}`,
+          wallet_address: txDetails.to,
           email: recipient.email,
         },
         createdAt
@@ -206,7 +210,7 @@ export default function TransferModal({
       setIsSending(false);
       setTransferState(TransferStateEnum.Success);
     } catch (err) {
-      console.error("Error en la transferencia:", err);
+      console.error("Error in transfer:", err);
       setTransferState(TransferStateEnum.Error);
     }
   }
@@ -258,7 +262,7 @@ export default function TransferModal({
     setIsContactAdded(true);
 
     if (res && res.error) {
-      console.error("Error al agregar el contacto:", res.error);
+      console.error("Error adding contact:", res.error);
     }
   };
 
@@ -295,7 +299,7 @@ export default function TransferModal({
       {type === "transfer" ? (
         <DialogTrigger
           onClick={async () => {
-            const balance = await getUserBalance();
+            const balance = await getUsdcBalance();
             if (balance) {
               setUserBalance(balance);
             }
@@ -365,11 +369,9 @@ export default function TransferModal({
           ) : transferState === "error" ? (
             /* ----------------------- Error ----------------------- */
             <div className="flex flex-col items-center gap-4">
-              <p className="text-red-600">
-                Ocurrió un error en la transferencia.
-              </p>
+              <p className="text-red-600">An error occurred in the transfer.</p>
               <Button onClick={() => setTransferState(TransferStateEnum.Idle)}>
-                Reintentar
+                Retry
               </Button>
             </div>
           ) : (

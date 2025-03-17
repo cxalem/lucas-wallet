@@ -1,9 +1,10 @@
 import * as bip39 from "bip39";
 import { HDNode } from "@ethersproject/hdnode";
 import { Keypair } from "@solana/web3.js";
+import { derivePath } from "ed25519-hd-key";
 
 const ETH_DERIVATION_PATH = "m/44'/60'/0'/0"; // Ethereum derivation path
-const SOLANA_DERIVATION_PATH = "m/44'/501'/0'/0"; // Solana derivation path
+const SOLANA_DERIVATION_PATH = "m/44'/501'/0'/0'"; // Solana derivation path
 
 export interface Wallet {
   mnemonic: string;
@@ -51,15 +52,7 @@ function seedToHDNode(seed: Buffer): HDNode {
  */
 export function createWallet(): Wallet {
   const mnemonic = generateMnemonic();
-  const seed = mnemonicToSeed(mnemonic);
-  const hdNode = seedToHDNode(seed);
-  const childNode = hdNode.derivePath(ETH_DERIVATION_PATH);
-
-  return {
-    mnemonic,
-    privateKey: childNode.privateKey,
-    address: childNode.address,
-  };
+  return getWallet(mnemonic);
 }
 
 /**
@@ -101,13 +94,12 @@ export function getSolanaWallet(mnemonic: string): Wallet {
   }
 
   const seed = mnemonicToSeed(mnemonic);
-  const hdNode = HDNode.fromSeed(seed);
-  const childNode = hdNode.derivePath(SOLANA_DERIVATION_PATH);
-
-  // Convert the derived key into a Solana-compatible Keypair
   const keypair = Keypair.fromSeed(
-    childNode.privateKey.slice(0, 32) as unknown as Uint8Array
+    derivePath(SOLANA_DERIVATION_PATH, seed.toString("hex")).key
   );
+
+  console.log(`Public key: ${keypair.publicKey.toBase58()}`);
+  console.log(`Secret key: ${keypair.secretKey}`);
 
   return {
     mnemonic,

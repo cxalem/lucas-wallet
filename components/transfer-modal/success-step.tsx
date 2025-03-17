@@ -5,15 +5,16 @@ import { transferFormSchema } from "@/utils/schemas";
 import { z } from "zod";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { Button } from "../ui/button";
-
+import { formatUsdcBalance } from "@/lib/utils";
 type TransferSuccessProps = {
   onClick: () => void;
   transferData: z.infer<typeof transferFormSchema> | null;
   recipient: {
     first_name: string;
     last_name: string;
+    user_name: string;
   } | null;
-  transactionHash: `0x${string}` | null;
+  transactionHash: string | null;
   isContactAdded: boolean | undefined;
   handleAddContact: () => void;
 };
@@ -26,19 +27,22 @@ export const TransferSuccess = ({
   isContactAdded,
   handleAddContact,
 }: TransferSuccessProps) => {
+  const recipientName =
+    recipient?.first_name && recipient?.last_name
+      ? `${recipient.first_name} ${recipient.last_name}`
+      : `@${recipient?.user_name}`;
+
   return (
     <div className="flex flex-col gap-4 w-full">
       <div className="flex flex-col mt-4">
         <span className="text-zinc-50 text-opacity-70">You&apos;ve sent</span>
         <span className="text-zinc-50 font-bold text-2xl">
-          {transferData?.amount} ETH
+          {formatUsdcBalance(transferData?.amount ?? 0)} USDC
         </span>
       </div>
       <div className="flex gap-2 items-end">
         <span className="text-zinc-50 text-opacity-70">To:</span>
-        <span className="text-zinc-50 font-bold text-xl">
-          {recipient?.first_name} {recipient?.last_name}
-        </span>
+        <span className="text-zinc-50 font-bold text-xl">{recipientName}</span>
       </div>
 
       <div className="flex px-1 w-full mt-2">
