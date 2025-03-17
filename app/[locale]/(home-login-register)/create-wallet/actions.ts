@@ -15,7 +15,7 @@ const signupSchema = z.object({
     .min(6, { message: "La contraseña debe tener al menos 6 caracteres." }),
   first_name: z.string().min(1, { message: "Ingresa tu nombre." }),
   last_name: z.string().min(1, { message: "Ingresa tu apellido." }),
-  phone: z.string().min(1, { message: "Ingresa tu teléfono." }),
+  phone: z.string().min(1, { message: "Ingresa tu teléfono." }).optional(),
 });
 
 export async function signup(formData: FormData) {
