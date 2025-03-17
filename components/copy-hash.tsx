@@ -2,12 +2,14 @@
 
 import { CheckIcon, CopyIcon } from "lucide-react";
 import { useState } from "react";
+import { useI18n } from "@/locales/client";
 
 type CopyHashProps = {
   hash: string;
 };
 
 export function CopyHash({ hash }: CopyHashProps) {
+  const t = useI18n();
   // Create a truncated version, e.g. 0x1234...abcd
   const truncatedHash = `${hash.slice(0, 6)}...${hash.slice(-6)}`;
 
@@ -18,10 +20,10 @@ export function CopyHash({ hash }: CopyHashProps) {
       await navigator.clipboard.writeText(hash);
       setIsCopied(true);
 
-      // Automatically hide the “Copied!” message after 2 seconds
+      // Automatically hide the "Copied!" message after 2 seconds
       setTimeout(() => setIsCopied(false), 2000);
     } catch (error) {
-      console.error("Failed to copy hash:", error);
+      console.error(t("copy.error"), error);
     }
   };
 

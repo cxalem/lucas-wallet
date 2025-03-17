@@ -6,9 +6,11 @@ import { Input } from "@/components/ui/input";
 import { CardContent } from "@/components/ui/card";
 import { Contact } from "@/types";
 import TransferModal from "../transfer-modal";
+import { useI18n } from "@/locales/client";
 
 export const ContactCardContent = ({ contacts }: { contacts: Contact[] }) => {
   const [searchQuery, setSearchQuery] = useState("");
+  const t = useI18n();
 
   const sortedContacts = [...contacts].sort((a, b) => {
     if (!a.lastTransaction) return 1;
@@ -27,7 +29,7 @@ export const ContactCardContent = ({ contacts }: { contacts: Contact[] }) => {
       <div className="relative mb-6">
         <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search for a specific contact"
+          placeholder={t("contacts.search.placeholder")}
           className="pl-9 border border-neutral-600"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -42,9 +44,9 @@ export const ContactCardContent = ({ contacts }: { contacts: Contact[] }) => {
         </div>
       ) : (
         <div className="text-center py-12 h-[236px] overflow-y-auto flex flex-col justify-center items-center">
-          <h3 className="text-lg font-medium">No contacts found</h3>
+          <h3 className="text-lg font-medium">{t("contacts.empty.title")}</h3>
           <p className="text-muted-foreground mt-1">
-            You have no contacts or recent transactions to display
+            {t("contacts.empty.description")}
           </p>
         </div>
       )}

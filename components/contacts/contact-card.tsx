@@ -10,6 +10,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import Image from "next/image";
 import { UseFormReturn } from "react-hook-form";
 import { Contact } from "@/types";
+import { useI18n } from "@/locales/client";
+
 type ContactCardProps = {
   contact: Contact;
   transferForm: UseFormReturn<z.infer<typeof transferFormSchema>>;
@@ -23,6 +25,8 @@ export const ContactCard = ({
   setUserBalance,
   setUserContact,
 }: ContactCardProps) => {
+  const t = useI18n();
+
   const getInitials = (first_name: string, last_name: string) => {
     return `${first_name[0]}${last_name[0]}`.toUpperCase();
   };
@@ -53,7 +57,10 @@ export const ContactCard = ({
           {contact.avatarUrl ? (
             <Image
               src={contact.avatarUrl || "/placeholder.svg"}
-              alt={`${contact.first_name} ${contact.last_name}`}
+              alt={t("contacts.card.altText", {
+                firstName: contact.first_name,
+                lastName: contact.last_name,
+              })}
               width={40}
               height={40}
             />

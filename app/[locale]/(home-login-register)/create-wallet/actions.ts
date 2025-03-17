@@ -6,7 +6,7 @@ import { z } from "zod";
 
 import { createClient } from "@/utils/supabase/server";
 import { createWallet } from "./utils";
-import { encryptData } from "@/app/security/encrypt";
+import { encryptData } from "@/app/[locale]/security/encrypt";
 
 const signupSchema = z.object({
   email: z.string().email({ message: "Email inválido." }),

@@ -1,6 +1,6 @@
 "use server";
 
-import { decryptData } from "@/app/security/encrypt";
+import { decryptData } from "@/app/[locale]/security/encrypt";
 import { createClient } from "@/utils/supabase/server";
 import { client } from "@/wallet.config";
 import { formatEther } from "viem";

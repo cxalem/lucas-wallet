@@ -1,7 +1,12 @@
 import Link from "next/link";
 import LoginButton from "./login-button";
+import LanguageSwitcher from "./language-switcher";
+import { getCurrentLocale } from "@/locales/server";
+import { I18nProviderClient } from "@/locales/client";
 
-export default function Navbar() {
+export default async function Navbar() {
+  const locale = await getCurrentLocale();
+
   return (
     <nav className="flex justify-between items-center px-2 md:px-0 py-8 w-full max-w-6xl mx-auto">
       <Link href="/" className="font-bold text-lg">
@@ -9,7 +14,12 @@ export default function Navbar() {
           Lucas <br /> Wallet
         </h1>
       </Link>
-      <LoginButton />
+      <I18nProviderClient locale={locale}>
+        <div className="flex items-center gap-2">
+          <LanguageSwitcher />
+          <LoginButton />
+        </div>
+      </I18nProviderClient>
     </nav>
   );
 }
