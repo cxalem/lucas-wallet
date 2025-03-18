@@ -16,10 +16,7 @@ import { Button } from "@/components/ui/button";
 
 import { createClient } from "@/utils/supabase/client";
 import { INPUT_ERROR_TYPES } from "@/utils/constants";
-import {
-  passwordFormSchema,
-  transferFormSchema,
-} from "@/utils/schemas";
+import { passwordFormSchema, transferFormSchema } from "@/utils/schemas";
 import { Contact } from "@/types";
 import { TransferModalFirstStep } from "./first-transfer-step";
 import { TransferModalSecondStep } from "./second-transfer-step";
@@ -33,7 +30,7 @@ import {
 import { ContactCard } from "../contacts/contact-card";
 import { addContact, getContact } from "../contacts/actions";
 import { TransferSuccess } from "./success-step";
-import { transferSolana } from "@/utils/solana/helpers";
+import { sendSolanaTransaction } from "@/utils/solana/helpers";
 import { Keypair, PublicKey } from "@solana/web3.js";
 
 type TransferModalProps = {
@@ -47,26 +44,20 @@ export default function TransferModal({
 }: TransferModalProps) {
   const supabase = createClient();
 
-  // Transfer states
-  const [transferState, setTransferState] = useState<TransferStateEnum>(
-    TransferStateEnum.Idle
-  );
+  const [transfer, setTransfer] = useState({
+    state: TransferStateEnum.Idle,
+    data: null as z.infer<typeof transferFormSchema> | null,
+    recipient: null as {
+      wallet_address: PublicKey;
+      first_name: string;
+      user_name: string;
+      last_name: string;
+      email: string;
+    } | null,
+    transactionHash: null as string | null,
+  });
 
-  // Store form data from the first step
-  const [transferData, setTransferData] = useState<z.infer<
-    typeof transferFormSchema
-  > | null>(null);
-
-  // Store the user (recipient) from DB
-  const [recipient, setRecipient] = useState<{
-    wallet_address: PublicKey;
-    first_name: string;
-    user_name: string;
-    last_name: string;
-    email: string;
-  } | null>(null);
-
-  const [transactionHash, setTransactionHash] = useState<string | null>(null);
+  const [userBalance, setUserBalance] = useState<string | null>(null);
 
   /* ********** I'll need this later, that's why I'm keeping it here ********** */
   // const [transactionDetails, setTransactionDetails] = useState<z.infer<
@@ -102,8 +93,6 @@ export default function TransferModal({
     },
   });
 
-  const [userBalance, setUserBalance] = useState<string | null>(null);
-
   async function handleTransferFormSubmit(
     values: z.infer<typeof transferFormSchema>
   ) {
@@ -133,24 +122,37 @@ export default function TransferModal({
         return;
       }
 
-      setTransferData(values);
-      setRecipient(data[0]);
-      setTransferState(TransferStateEnum.Validating);
+      setTransfer((prev) => ({
+        ...prev,
+        state: TransferStateEnum.Validating,
+        data: values,
+        recipient: data[0],
+        transactionHash: null,
+      }));
     } catch (err) {
       console.error("Unexpected error searching user:", err);
-      setTransferState(TransferStateEnum.Error);
+      setTransfer((prev) => ({
+        ...prev,
+        state: TransferStateEnum.Error,
+        data: null,
+        recipient: null,
+        transactionHash: null,
+      }));
     }
   }
 
   async function handlePasswordFormSubmit(
     values: z.infer<typeof passwordFormSchema>
   ) {
-    if (!transferData || !recipient) {
+    if (!transfer.data || !transfer.recipient) {
       console.error("Incomplete data for transfer");
       return;
     }
     try {
-      setTransferState(TransferStateEnum.Pending);
+      setTransfer((prev) => ({
+        ...prev,
+        state: TransferStateEnum.Pending,
+      }));
       setIsSending(true);
 
       const loggedUser = await supabase.auth.getUser();
@@ -173,20 +175,36 @@ export default function TransferModal({
 
       const senderKeypair = Keypair.fromSecretKey(privateKeyUint8Array);
 
-      const signature = await transferSolana(
+      const recipientPublicKey = new PublicKey(
+        transfer.recipient.wallet_address
+      );
+
+      const signature = await sendSolanaTransaction(
         senderKeypair,
-        recipient.wallet_address,
-        transferData.amount
+        recipientPublicKey,
+        transfer.data.amount
       );
 
       const txDetails = {
         from: senderKeypair.publicKey.toBase58(),
-        to: recipient.wallet_address.toBase58(),
-        amount: transferData.amount,
+        to: recipientPublicKey.toBase58(),
+        amount: transfer.data.amount,
         signature: signature,
       };
 
-      setTransactionHash(signature);
+      if (!signature) {
+        console.error("❌ Transaction failed");
+        setTransfer((prev) => ({
+          ...prev,
+          state: TransferStateEnum.Error,
+        }));
+        return;
+      }
+
+      setTransfer((prev) => ({
+        ...prev,
+        transactionHash: signature,
+      }));
 
       const createdAt = new Date().toISOString();
 
@@ -200,7 +218,7 @@ export default function TransferModal({
         },
         {
           wallet_address: txDetails.to,
-          email: recipient.email,
+          email: transfer.recipient.email,
         },
         createdAt
       );
@@ -208,10 +226,16 @@ export default function TransferModal({
       await isContact();
 
       setIsSending(false);
-      setTransferState(TransferStateEnum.Success);
+      setTransfer((prev) => ({
+        ...prev,
+        state: TransferStateEnum.Success,
+      }));
     } catch (err) {
       console.error("Error in transfer:", err);
-      setTransferState(TransferStateEnum.Error);
+      setTransfer((prev) => ({
+        ...prev,
+        state: TransferStateEnum.Error,
+      }));
     }
   }
 
@@ -325,52 +349,65 @@ export default function TransferModal({
       <DialogContent className="bg-neutral-900">
         <div className="relative">
           <DialogHeader>
-            <DialogTitle>{getDialogTitle(transferState)}</DialogTitle>
+            <DialogTitle>{getDialogTitle(transfer.state)}</DialogTitle>
             <DialogDescription>
-              {getDialogDescription(transferState)}
+              {getDialogDescription(transfer.state)}
             </DialogDescription>
           </DialogHeader>
 
-          {transferState === "validating" && transferData ? (
+          {transfer.state === TransferStateEnum.Validating && transfer.data ? (
             /* ---------------------- Step 2: Validation ---------------------- */
             <TransferModalSecondStep
-              transferData={transferData}
-              recipient={recipient}
-              setTransferState={setTransferState}
+              transferData={transfer.data}
+              recipient={transfer.recipient}
+              setTransferState={setTransfer}
             />
-          ) : transferState === "pending" ? (
+          ) : transfer.state === "pending" ? (
             /* ----------------------- Step 3: Confirm password ---------------------- */
             <TransferModalThirdStep
               passwordForm={passwordForm}
               handlePasswordFormSubmit={handlePasswordFormSubmit}
-              setTransferState={setTransferState}
+              setTransferState={setTransfer}
               isSending={isSending}
             />
-          ) : transferState === "success" ? (
+          ) : transfer.state === "success" ? (
             /* ----------------------- Success ----------------------- */
             <TransferSuccess
               onClick={() => {
-                setTransferState(TransferStateEnum.Idle);
-                setTransactionHash(null);
-                setRecipient(null);
+                setTransfer((prev) => ({
+                  ...prev,
+                  state: TransferStateEnum.Idle,
+                  transactionHash: null,
+                  recipient: null,
+                  data: null,
+                }));
                 setUserBalance(null);
                 setUserContact(null);
-                setTransferData(null);
                 setInputError(null);
                 transferForm.reset();
                 passwordForm.reset();
               }}
-              transferData={transferData}
-              recipient={recipient}
-              transactionHash={transactionHash}
+              transferData={transfer.data}
+              recipient={transfer.recipient}
+              transactionHash={transfer.transactionHash}
               isContactAdded={isContactAdded}
               handleAddContact={handleAddContact}
             />
-          ) : transferState === "error" ? (
+          ) : transfer.state === "error" ? (
             /* ----------------------- Error ----------------------- */
             <div className="flex flex-col items-center gap-4">
               <p className="text-red-600">An error occurred in the transfer.</p>
-              <Button onClick={() => setTransferState(TransferStateEnum.Idle)}>
+              <Button
+                onClick={() =>
+                  setTransfer((prev) => ({
+                    ...prev,
+                    state: TransferStateEnum.Idle,
+                    data: null,
+                    recipient: null,
+                    transactionHash: null,
+                  }))
+                }
+              >
                 Retry
               </Button>
             </div>
