@@ -13,15 +13,31 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { passwordFormSchema } from "@/utils/schemas";
+import { passwordFormSchema, transferFormSchema } from "@/utils/schemas";
 import { TransferStateEnum } from "@/types";
+import { Dispatch } from "react";
+import { PublicKey } from "@solana/web3.js";
+import { SetStateAction } from "react";
 
 type TransferModalThirdStepProps = {
   passwordForm: UseFormReturn<z.infer<typeof passwordFormSchema>>;
   handlePasswordFormSubmit: (
     values: z.infer<typeof passwordFormSchema>
   ) => void;
-  setTransferState: (state: TransferStateEnum) => void;
+  setTransferState: Dispatch<
+    SetStateAction<{
+      state: TransferStateEnum;
+      data: z.infer<typeof transferFormSchema> | null;
+      recipient: {
+        wallet_address: PublicKey;
+        first_name: string;
+        user_name: string;
+        last_name: string;
+        email: string;
+      } | null;
+      transactionHash: string | null;
+    }>
+  >;
   isSending: boolean;
 };
 
@@ -61,7 +77,12 @@ export const TransferModalThirdStep = ({
           <Button
             variant="secondary"
             className="w-full"
-            onClick={() => setTransferState(TransferStateEnum.Validating)}
+            onClick={() =>
+              setTransferState((prev) => ({
+                ...prev,
+                state: TransferStateEnum.Validating,
+              }))
+            }
           >
             Back
           </Button>

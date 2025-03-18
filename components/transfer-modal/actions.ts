@@ -93,7 +93,6 @@ export const addTransactionToDb = async (
     transaction_hash: transaction.signature,
     from: JSON.stringify(from_user),
     to: JSON.stringify(to_user),
-    amount: transaction.amount,
     created_at: created_at,
   });
   if (error) {

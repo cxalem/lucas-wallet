@@ -5,6 +5,8 @@ import { TransferStateEnum } from "@/types";
 import { Separator } from "@radix-ui/react-separator";
 import { formatUsdcBalance } from "@/lib/utils";
 import { PublicKey } from "@solana/web3.js";
+import { Dispatch } from "react";
+import { SetStateAction } from "react";
 
 type TransferModalSecondStepProps = {
   transferData: z.infer<typeof transferFormSchema>;
@@ -15,7 +17,20 @@ type TransferModalSecondStepProps = {
     last_name: string;
     email: string;
   } | null;
-  setTransferState: (state: TransferStateEnum) => void;
+  setTransferState: Dispatch<
+    SetStateAction<{
+      state: TransferStateEnum;
+      data: z.infer<typeof transferFormSchema> | null;
+      recipient: {
+        wallet_address: PublicKey;
+        first_name: string;
+        user_name: string;
+        last_name: string;
+        email: string;
+      } | null;
+      transactionHash: string | null;
+    }>
+  >;
 };
 
 export const TransferModalSecondStep = ({
@@ -59,13 +74,23 @@ export const TransferModalSecondStep = ({
         <Button
           variant="secondary"
           className="w-full"
-          onClick={() => setTransferState(TransferStateEnum.Idle)}
+          onClick={() =>
+            setTransferState((prev) => ({
+              ...prev,
+              state: TransferStateEnum.Idle,
+            }))
+          }
         >
           Back
         </Button>
         <Button
           className="w-full"
-          onClick={() => setTransferState(TransferStateEnum.Pending)}
+          onClick={() =>
+            setTransferState((prev) => ({
+              ...prev,
+              state: TransferStateEnum.Pending,
+            }))
+          }
         >
           Transfer
         </Button>
