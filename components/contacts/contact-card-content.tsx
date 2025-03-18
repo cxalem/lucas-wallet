@@ -16,10 +16,14 @@ export const ContactCardContent = ({ contacts }: { contacts: Contact[] }) => {
     return b.lastTransaction.date.getTime() - a.lastTransaction.date.getTime();
   });
 
+  const nameOrUsername = (contact: Contact) => {
+    return contact.first_name
+      ? `${contact.first_name} ${contact.last_name}`
+      : `${contact.user_name}`;
+  };
+
   const filteredContacts = sortedContacts.filter((contact) =>
-    `${contact.first_name} ${contact.last_name}`
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase())
+    nameOrUsername(contact).toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
