@@ -26,6 +26,7 @@ export const addContact = async (contact: Contact, loggedUser: User) => {
   const { error, statusText } = await supabase.from("contacts").insert({
     owner_id: loggedUser.id,
     first_name: contact.first_name,
+    user_name: contact.user_name,
     last_name: contact.last_name,
     email: contact.email,
     wallet_address: contact.wallet_address,
