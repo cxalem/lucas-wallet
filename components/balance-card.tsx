@@ -18,7 +18,6 @@ export const BalanceCard = async ({
         <div className="font-bold">
           <p className="text-3xl">
             {t("wallet.welcome", { name: nameOrUsername })}
-            !
             <br />
           </p>
           <span className="text-blue-50 text-opacity-70 font-thin text-md">
