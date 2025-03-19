@@ -28,6 +28,8 @@ export default {
   "createWallet.button": "Create account",
   "createWallet.haveAccount": "You don already get account?",
   "createWallet.login": "Login",
+  "createWallet.username.label": "Username:",
+  "createWallet.username.placeholder": "Put your username",
 
   // Wallet page content
   "wallet.welcome": "Welcome, {name}!",

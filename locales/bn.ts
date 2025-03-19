@@ -28,6 +28,8 @@ export default {
   "createWallet.button": "অ্যাকাউন্ট তৈরি করুন",
   "createWallet.haveAccount": "ইতিমধ্যে একটি অ্যাকাউন্ট আছে?",
   "createWallet.login": "লগইন",
+  "createWallet.username.label": "ইউজারনেম:",
+  "createWallet.username.placeholder": "আপনার ইউজারনেম লিখুন",
 
   // Wallet page content
   "wallet.welcome": "স্বাগতম, {name}!",
