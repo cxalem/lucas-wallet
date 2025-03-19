@@ -1,7 +1,10 @@
 import * as bip39 from "bip39";
 import { HDNode } from "@ethersproject/hdnode";
+import { Keypair } from "@solana/web3.js";
+import { derivePath } from "ed25519-hd-key";
 
 const ETH_DERIVATION_PATH = "m/44'/60'/0'/0"; // Ethereum derivation path
+const SOLANA_DERIVATION_PATH = "m/44'/501'/0'/0'"; // Solana derivation path
 
 export interface Wallet {
   mnemonic: string;
@@ -49,15 +52,7 @@ function seedToHDNode(seed: Buffer): HDNode {
  */
 export function createWallet(): Wallet {
   const mnemonic = generateMnemonic();
-  const seed = mnemonicToSeed(mnemonic);
-  const hdNode = seedToHDNode(seed);
-  const childNode = hdNode.derivePath(ETH_DERIVATION_PATH);
-
-  return {
-    mnemonic,
-    privateKey: childNode.privateKey,
-    address: childNode.address,
-  };
+  return getWallet(mnemonic);
 }
 
 /**
@@ -79,5 +74,36 @@ export function getWallet(mnemonic: string): Wallet {
     mnemonic,
     privateKey: childNode.privateKey,
     address: childNode.address,
+  };
+}
+
+/**
+ * Creates a Solana wallet from a mnemonic phrase.
+ */
+export function createSolanaWallet(): Wallet {
+  const mnemonic = generateMnemonic();
+  return getSolanaWallet(mnemonic);
+}
+
+/**
+ * Restores a Solana wallet from a given mnemonic.
+ */
+export function getSolanaWallet(mnemonic: string): Wallet {
+  if (!bip39.validateMnemonic(mnemonic)) {
+    throw new Error("Invalid mnemonic provided.");
+  }
+
+  const seed = mnemonicToSeed(mnemonic);
+  const keypair = Keypair.fromSeed(
+    derivePath(SOLANA_DERIVATION_PATH, seed.toString("hex")).key
+  );
+
+  console.log(`Public key: ${keypair.publicKey.toBase58()}`);
+  console.log(`Secret key: ${keypair.secretKey}`);
+
+  return {
+    mnemonic,
+    privateKey: Buffer.from(keypair.secretKey).toString("hex"),
+    address: keypair.publicKey.toBase58(),
   };
 }

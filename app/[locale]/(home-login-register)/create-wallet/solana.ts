@@ -1,11 +1,10 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-
-import { createClient } from "@/utils/supabase/server";
 import { createSolanaWallet } from "./utils";
+import { revalidatePath } from "next/cache";
 import { encryptData } from "@/app/[locale]/security/encrypt";
 
 const signupSchema = z.object({
@@ -16,11 +15,11 @@ const signupSchema = z.object({
   user_name: z.string().min(1, { message: "Enter your username." }),
 });
 
-export async function signup(formData: FormData) {
+export async function signUpSolanaWallet(formData: FormData) {
   const result = signupSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
-    user_name: formData.get("user_name"),
+    user_name: formData.get("username"),
   });
 
   if (!result.success) {
@@ -32,6 +31,7 @@ export async function signup(formData: FormData) {
   const { email, password, user_name } = result.data;
 
   const supabase = await createClient();
+
   const { data: existingUserData, error: existingUserError } = await supabase
     .from("profiles")
     .select("email, user_name")
@@ -40,7 +40,6 @@ export async function signup(formData: FormData) {
     .single();
 
   if (existingUserError && existingUserError.code !== "PGRST116") {
-    // If there's a non-"Row not found" error, handle it
     console.error("Error checking existing user:", existingUserError);
     redirect("/error");
     return;
@@ -65,20 +64,22 @@ export async function signup(formData: FormData) {
     options: {
       data: {
         user_name,
-        wallet_address: address,
-        salt,
-        iv,
-        ciphertext,
+        solana_wallet: {
+          address,
+          iv,
+          ciphertext,
+          salt,
+        },
       },
     },
   };
 
-  const { data: userData, error: signUpError } = await supabase.auth.signUp(
+  const { data: userData, error: userError } = await supabase.auth.signUp(
     signUpPayload
   );
 
-  if (signUpError || !userData.user) {
-    console.error("Error during signUp:", signUpError);
+  if (userError || !userData.user) {
+    console.error("Error during signUp:", userError);
     redirect("/error");
     return;
   }
@@ -86,11 +87,14 @@ export async function signup(formData: FormData) {
   const profilePayload = {
     id: userData.user.id,
     email,
+    password,
     user_name,
-    wallet_address: address,
-    salt,
-    iv,
-    ciphertext,
+    solana_wallet: {
+      address,
+      iv,
+      ciphertext,
+      salt,
+    },
   };
 
   const { error: profileError } = await supabase
@@ -102,7 +106,6 @@ export async function signup(formData: FormData) {
     redirect("/error");
     return;
   }
-
   revalidatePath("/", "layout");
   redirect("/");
 }
