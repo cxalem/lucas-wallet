@@ -98,9 +98,6 @@ export function getSolanaWallet(mnemonic: string): Wallet {
     derivePath(SOLANA_DERIVATION_PATH, seed.toString("hex")).key
   );
 
-  console.log(`Public key: ${keypair.publicKey.toBase58()}`);
-  console.log(`Secret key: ${keypair.secretKey}`);
-
   return {
     mnemonic,
     privateKey: Buffer.from(keypair.secretKey).toString("hex"),
