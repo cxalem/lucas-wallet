@@ -39,3 +39,10 @@ export const transactionReceiptSchema = z.object({
   transactionIndex: z.number(),
   type: z.string(),
 });
+
+export const solanaTransactionSchema = z.object({
+  from: z.string(),
+  to: z.string(),
+  amount: z.number(),
+  signature: z.string(),
+});

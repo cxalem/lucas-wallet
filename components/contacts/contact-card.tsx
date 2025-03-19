@@ -27,8 +27,18 @@ export const ContactCard = ({
 }: ContactCardProps) => {
   const t = useI18n();
 
-  const getInitials = (first_name: string, last_name: string) => {
-    return `${first_name[0]}${last_name[0]}`.toUpperCase();
+  const nameOrUsername = (contact: Contact) => {
+    return contact.first_name
+      ? `${contact.first_name} ${contact.last_name}`
+      : `${contact.user_name}`;
+  };
+
+  const getInitials = (contact: Contact) => {
+    if (contact.user_name) {
+      return `${contact.user_name[0]}${contact.user_name[1]}`.toUpperCase();
+    } else {
+      return `${contact.first_name[0]}${contact.last_name[0]}`.toUpperCase();
+    }
   };
 
   return (
@@ -44,6 +54,7 @@ export const ContactCard = ({
           id: contact.id,
           first_name: contact.first_name,
           last_name: contact.last_name,
+          user_name: contact.user_name,
           email: contact.email,
           wallet_address: contact.wallet_address,
           phone_number: contact.phone_number,
@@ -58,23 +69,18 @@ export const ContactCard = ({
             <Image
               src={contact.avatarUrl || "/placeholder.svg"}
               alt={t("contacts.card.altText", {
-                firstName: contact.first_name,
-                lastName: contact.last_name,
+                name: nameOrUsername(contact),
               })}
               width={40}
               height={40}
             />
           ) : (
-            <AvatarFallback>
-              {getInitials(contact.first_name, contact.last_name)}
-            </AvatarFallback>
+            <AvatarFallback>{getInitials(contact)}</AvatarFallback>
           )}
         </Avatar>
         <div className="flex flex-col text-start">
           <span className="text-sm text-muted-foreground">{contact.email}</span>
-          <span className="font-medium">
-            {contact.first_name} {contact.last_name}
-          </span>
+          <span className="font-medium">{nameOrUsername(contact)}</span>
         </div>
       </div>
       {contact?.phone_number && (
