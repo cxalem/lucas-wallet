@@ -34,7 +34,7 @@ export default {
   "wallet.balanceDescription": "এটি আপনার ব্যালেন্স",
   "wallet.balanceLabel": "ব্যালেন্স",
   "wallet.currency": "USD",
-  "wallet.crypto": "ETH",
+  "wallet.crypto": "USDC",
 
   // Add Contact component
   "contacts.add": "কন্টাক্ট যোগ করুন",
@@ -49,7 +49,7 @@ export default {
     "আপনার কোন কন্টাক্ট বা সাম্প্রতিক লেনদেন প্রদর্শন করার জন্য নেই",
 
   // Contact Card component
-  "contacts.card.altText": "{firstName} {lastName}",
+  "contacts.card.altText": "{user_name}",
 
   // Contacts List component
   "contacts.list.title": "আপনার কন্টাক্টদের কাছে অর্থ পাঠান",

@@ -34,7 +34,7 @@ export default {
   "wallet.balanceDescription": "Este es tu saldo",
   "wallet.balanceLabel": "Saldo",
   "wallet.currency": "USD",
-  "wallet.crypto": "ETH",
+  "wallet.crypto": "USDC",
 
   // Add Contact component
   "contacts.add": "Añadir Contacto",
@@ -49,7 +49,7 @@ export default {
     "No tienes contactos o transacciones recientes para mostrar",
 
   // Contact Card component
-  "contacts.card.altText": "{firstName} {lastName}",
+  "contacts.card.altText": "{user_name}",
 
   // Contacts List component
   "contacts.list.title": "Transfiere fondos a tus contactos",

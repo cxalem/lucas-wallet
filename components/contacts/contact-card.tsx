@@ -5,7 +5,7 @@ import { z } from "zod";
 import { DialogTrigger } from "@/components/ui/dialog";
 import { transferFormSchema } from "@/utils/schemas";
 
-import { getUserBalance } from "../transfer-modal/actions";
+import { getUsdcBalance } from "../transfer-modal/actions";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import Image from "next/image";
 import { UseFormReturn } from "react-hook-form";
@@ -45,7 +45,7 @@ export const ContactCard = ({
     <DialogTrigger
       onClick={() => {
         transferForm.setValue("email", contact.email);
-        getUserBalance().then((balance) => {
+        getUsdcBalance().then((balance) => {
           if (balance) {
             setUserBalance(balance);
           }
@@ -69,7 +69,7 @@ export const ContactCard = ({
             <Image
               src={contact.avatarUrl || "/placeholder.svg"}
               alt={t("contacts.card.altText", {
-                name: nameOrUsername(contact),
+                user_name: nameOrUsername(contact),
               })}
               width={40}
               height={40}

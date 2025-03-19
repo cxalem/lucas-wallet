@@ -34,7 +34,7 @@ export default {
   "wallet.balanceDescription": "This na your balance",
   "wallet.balanceLabel": "Balance",
   "wallet.currency": "USD",
-  "wallet.crypto": "ETH",
+  "wallet.crypto": "USDC",
 
   // Add Contact component
   "contacts.add": "Add Contact",
@@ -49,7 +49,7 @@ export default {
     "You no get contacts or recent transactions to show",
 
   // Contact Card component
-  "contacts.card.altText": "{firstName} {lastName}",
+  "contacts.card.altText": "{user_name}",
 
   // Contacts List component
   "contacts.list.title": "Transfer money to your contacts",
