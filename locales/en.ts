@@ -1,7 +1,7 @@
 export default {
   // Homepage content
   "home.title": "Send and Receive Money",
-  "home.subtitle": "When you want, where you want",
+  "home.subtitle": "Wherever you want",
   "home.balance.label": "Available balance",
   "home.balance.amount": "$23.877",
   "home.balance.crypto": "USDT 23.867",
