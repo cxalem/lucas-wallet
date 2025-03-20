@@ -14,7 +14,7 @@ import { useI18n } from "@/locales/client";
 export default function LoginForm() {
   const t = useI18n();
   const [inputError, setInputError] = useState<{
-    type: "email" | "password" | null;
+    type: "email" | "password" | "email-or-username" | null;
     message: string | null;
   }>({
     type: null,
@@ -35,25 +35,53 @@ export default function LoginForm() {
   });
 
   const handleLogin = async (formData: FormData) => {
-    const { data } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("email", formData.get("email"));
+    setIsLoading(true);
+    const emailOrUsername = formData.get("email-or-username")?.toString();
 
-    if (!data || data.length === 0) {
+    if (!emailOrUsername) {
       setInputError({
-        type: "email",
-        message: t("login.form.error.email"),
+        type: "email-or-username",
+        message: t("login.form.error.required"),
       });
       return;
     }
 
+    let userEmail = emailOrUsername;
+
+    // If input is a username, fetch the associated email
+    if (!emailOrUsername.includes("@")) {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("user_name", emailOrUsername)
+        .single();
+
+      if (error || !data) {
+        setInputError({
+          type: "email-or-username",
+          message: t("login.form.error.usernameNotFound"),
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      userEmail = data.email;
+      setIsLoading(false);
+    }
+
     setIsLoading(true);
 
-    const result = await login(formData);
+    // Construct formData with the correct email
+    const updatedFormData = new FormData();
+    updatedFormData.append("email", userEmail);
+    updatedFormData.append("password", formData.get("password") as string);
+
+    // Attempt login
+    const result = await login(updatedFormData);
+
+    setIsLoading(false);
 
     if (result.error) {
-      setIsLoading(false);
       if (result.status === 400) {
         setInputError({
           type: "password",
@@ -62,7 +90,6 @@ export default function LoginForm() {
       }
       return;
     }
-    setIsLoading(false);
   };
 
   return (
@@ -80,21 +107,26 @@ export default function LoginForm() {
         )}
       </div>
       <div className="flex flex-col gap-1 w-full max-w-md">
-        <label htmlFor="email">{t("login.form.email.label")}</label>
+        <label htmlFor="email-or-username">
+          {t("login.form.email-or-username.label")}
+        </label>
         <Input
           {...register("email")}
           className={`bg-neutral-700 border-transparent w-full`}
           onChange={() => setInputError({ type: null, message: null })}
-          id="email"
-          name="email"
-          type="email"
-          placeholder={t("login.form.email.placeholder")}
+          id="email-or-username"
+          name="email-or-username"
+          type="text"
+          placeholder={t("login.form.email-or-username.placeholder")}
           required
         />
-        {inputError.type === "email" && (
+        {inputError.type === "email-or-username" ? (
           <p className="text-red-500 text-sm">{inputError.message}</p>
+        ) : inputError.type === "email" ? (
+          <p className="text-red-500 text-sm">{inputError.message}</p>
+        ) : (
+          <label htmlFor="password">{t("login.form.password.label")}</label>
         )}
-        <label htmlFor="password">{t("login.form.password.label")}</label>
         <Input
           {...register("password")}
           className={`bg-neutral-700 border-transparent w-full`}
