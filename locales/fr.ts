@@ -12,6 +12,13 @@ export default {
   // Login page content
   "login.noAccount": "Vous n'avez pas de compte ?",
   "login.createAccount": "Créer un compte",
+  "login.form.email-or-username.label": "Email ou Nom d'utilisateur :",
+  "login.form.email-or-username.placeholder":
+    "Entrez votre email ou nom d'utilisateur",
+  "login.form.error.email-or-username":
+    "Entrez un email ou nom d'utilisateur valide",
+  "login.form.error.required": "Ce champ est requis",
+  "login.form.error.usernameNotFound": "Nom d'utilisateur non trouvé",
 
   // Create wallet page content
   "createWallet.title": "Portefeuille Lucas",

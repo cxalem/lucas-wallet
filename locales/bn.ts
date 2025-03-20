@@ -12,6 +12,11 @@ export default {
   // Login page content
   "login.noAccount": "অ্যাকাউন্ট নেই?",
   "login.createAccount": "একটি অ্যাকাউন্ট তৈরি করুন",
+  "login.form.email-or-username.label": "ইমেইল অথবা ইউজারনেম:",
+  "login.form.email-or-username.placeholder": "আপনার ইমেইল অথবা ইউজারনেম লিখুন",
+  "login.form.error.email-or-username": "একটি বৈধ ইমেইল অথবা ইউজারনেম লিখুন",
+  "login.form.error.required": "এই ক্ষেত্রটি প্রয়োজনীয়",
+  "login.form.error.usernameNotFound": "ইউজারনেম পাওয়া যায়নি",
 
   // Create wallet page content
   "createWallet.title": "লুকাস ওয়ালেট",
