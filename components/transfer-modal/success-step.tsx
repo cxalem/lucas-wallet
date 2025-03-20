@@ -15,8 +15,9 @@ type TransferSuccessProps = {
   recipient: {
     first_name: string;
     last_name: string;
+    user_name: string;
   } | null;
-  transactionHash: `0x${string}` | null;
+  transactionHash: string | null;
   isContactAdded: boolean | undefined;
   handleAddContact: () => void;
 };
@@ -30,6 +31,11 @@ export const TransferSuccess = ({
   handleAddContact,
 }: TransferSuccessProps) => {
   const t = useI18n();
+
+  const recipientName =
+    recipient?.first_name && recipient?.last_name
+      ? `${recipient.first_name} ${recipient.last_name}`
+      : `@${recipient?.user_name}`;
 
   return (
     <div className="flex flex-col gap-4 w-full">
@@ -45,9 +51,7 @@ export const TransferSuccess = ({
         <span className="text-zinc-50 text-opacity-70">
           {t("transfer.success.to")}
         </span>
-        <span className="text-zinc-50 font-bold text-xl">
-          {recipient?.first_name} {recipient?.last_name}
-        </span>
+        <span className="text-zinc-50 font-bold text-xl">{recipientName}</span>
       </div>
 
       <div className="flex px-1 w-full mt-2">

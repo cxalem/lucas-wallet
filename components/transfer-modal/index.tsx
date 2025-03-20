@@ -15,13 +15,8 @@ import {
 import { Button } from "@/components/ui/button";
 
 import { createClient } from "@/utils/supabase/client";
-import { walletClient } from "@/wallet.config";
 import { INPUT_ERROR_TYPES } from "@/utils/constants";
-import {
-  passwordFormSchema,
-  transferFormSchema,
-  transactionReceiptSchema,
-} from "@/utils/schemas";
+import { passwordFormSchema, transferFormSchema } from "@/utils/schemas";
 import { Contact } from "@/types";
 import { TransferModalFirstStep } from "./first-transfer-step";
 import { TransferModalSecondStep } from "./second-transfer-step";
@@ -30,12 +25,13 @@ import { TransferStateEnum } from "@/types";
 import {
   addTransactionToDb,
   decryptPrivateKey,
-  getTransactionDetails,
-  getUserBalance,
+  getUsdcBalance,
 } from "./actions";
 import { ContactCard } from "../contacts/contact-card";
 import { addContact, getContact } from "../contacts/actions";
 import { TransferSuccess } from "./success-step";
+import { sendSolanaTransaction } from "@/utils/solana/helpers";
+import { Keypair, PublicKey } from "@solana/web3.js";
 
 type TransferModalProps = {
   type?: "transfer" | "contact";
@@ -48,27 +44,20 @@ export default function TransferModal({
 }: TransferModalProps) {
   const supabase = createClient();
 
-  // Transfer states
-  const [transferState, setTransferState] = useState<TransferStateEnum>(
-    TransferStateEnum.Idle
-  );
+  const [transfer, setTransfer] = useState({
+    state: TransferStateEnum.Idle,
+    data: null as z.infer<typeof transferFormSchema> | null,
+    recipient: null as {
+      wallet_address: PublicKey;
+      first_name: string;
+      user_name: string;
+      last_name: string;
+      email: string;
+    } | null,
+    transactionHash: null as string | null,
+  });
 
-  // Store form data from the first step
-  const [transferData, setTransferData] = useState<z.infer<
-    typeof transferFormSchema
-  > | null>(null);
-
-  // Store the user (recipient) from DB
-  const [recipient, setRecipient] = useState<{
-    wallet_address: `0x${string}`;
-    first_name: string;
-    last_name: string;
-    email: string;
-  } | null>(null);
-
-  const [transactionHash, setTransactionHash] = useState<`0x${string}` | null>(
-    null
-  );
+  const [userBalance, setUserBalance] = useState<string | null>(null);
 
   /* ********** I'll need this later, that's why I'm keeping it here ********** */
   // const [transactionDetails, setTransactionDetails] = useState<z.infer<
@@ -104,8 +93,6 @@ export default function TransferModal({
     },
   });
 
-  const [userBalance, setUserBalance] = useState<string | null>(null);
-
   async function handleTransferFormSubmit(
     values: z.infer<typeof transferFormSchema>
   ) {
@@ -118,46 +105,59 @@ export default function TransferModal({
         .eq("email", values.email);
 
       if (error) {
-        console.error("Error al obtener el usuario", error);
+        console.error("Error getting user", error);
         setInputError(INPUT_ERROR_TYPES.user_not_found);
         return;
       }
 
       if (!data || data.length === 0) {
-        console.error("No se encontraron usuarios con ese email.");
+        console.error("No users found with that email.");
         setInputError(INPUT_ERROR_TYPES.user_not_found);
         return;
       }
 
       if (loggedUser?.data.user?.email === values.email) {
-        console.error("No puedes transferir fondos a tu propia cuenta.");
+        console.error("You can't transfer funds to your own account.");
         setInputError(INPUT_ERROR_TYPES.same_account);
         return;
       }
 
-      setTransferData(values);
-      setRecipient(data[0]);
-      setTransferState(TransferStateEnum.Validating);
+      setTransfer((prev) => ({
+        ...prev,
+        state: TransferStateEnum.Validating,
+        data: values,
+        recipient: data[0],
+        transactionHash: null,
+      }));
     } catch (err) {
-      console.error("Error inesperado al buscar usuario:", err);
-      setTransferState(TransferStateEnum.Error);
+      console.error("Unexpected error searching user:", err);
+      setTransfer((prev) => ({
+        ...prev,
+        state: TransferStateEnum.Error,
+        data: null,
+        recipient: null,
+        transactionHash: null,
+      }));
     }
   }
 
   async function handlePasswordFormSubmit(
     values: z.infer<typeof passwordFormSchema>
   ) {
-    if (!transferData || !recipient) {
-      console.error("Datos incompletos para la transferencia.");
+    if (!transfer.data || !transfer.recipient) {
+      console.error("Incomplete data for transfer");
       return;
     }
     try {
-      setTransferState(TransferStateEnum.Pending);
+      setTransfer((prev) => ({
+        ...prev,
+        state: TransferStateEnum.Pending,
+      }));
       setIsSending(true);
 
       const loggedUser = await supabase.auth.getUser();
       if (!loggedUser?.data.user) {
-        console.error("No hay usuario autenticado.");
+        console.error("No authenticated user");
         return;
       }
 
@@ -169,34 +169,56 @@ export default function TransferModal({
 
       const privateKey = await decryptPrivateKey(values.password, userMetadata);
 
-      const signerClient = walletClient(privateKey as `0x${string}`);
+      const privateKeyUint8Array = Uint8Array.from(
+        Buffer.from(privateKey, "hex")
+      );
 
-      const weiAmount = BigInt(Math.floor(transferData.amount * 1e18));
+      const senderKeypair = Keypair.fromSecretKey(privateKeyUint8Array);
 
-      const tx = await signerClient.sendTransaction({
-        to: recipient.wallet_address,
-        value: weiAmount,
-        timeStamp: Math.floor(Date.now() / 1000),
-      });
+      const recipientPublicKey = new PublicKey(
+        transfer.recipient.wallet_address
+      );
 
-      const txDetails = (await getTransactionDetails(tx)) as z.infer<
-        typeof transactionReceiptSchema
-      >;
+      const signature = await sendSolanaTransaction(
+        senderKeypair,
+        recipientPublicKey,
+        transfer.data.amount
+      );
 
-      console.log("Transferencia exitosa, hash:", txDetails);
-      setTransactionHash(tx);
+      const txDetails = {
+        from: senderKeypair.publicKey.toBase58(),
+        to: recipientPublicKey.toBase58(),
+        amount: transfer.data.amount,
+        signature: signature,
+      };
+
+      if (!signature) {
+        console.error("❌ Transaction failed");
+        setTransfer((prev) => ({
+          ...prev,
+          state: TransferStateEnum.Error,
+        }));
+        return;
+      }
+
+      setTransfer((prev) => ({
+        ...prev,
+        transactionHash: signature,
+      }));
 
       const createdAt = new Date().toISOString();
+
+      console.log("txDetails", txDetails);
 
       await addTransactionToDb(
         txDetails,
         {
-          wallet_address: txDetails.from as `0x${string}`,
+          wallet_address: txDetails.from,
           email: loggedUser.data.user.email!,
         },
         {
-          wallet_address: txDetails.to as `0x${string}`,
-          email: recipient.email,
+          wallet_address: txDetails.to,
+          email: transfer.recipient.email,
         },
         createdAt
       );
@@ -204,10 +226,16 @@ export default function TransferModal({
       await isContact();
 
       setIsSending(false);
-      setTransferState(TransferStateEnum.Success);
+      setTransfer((prev) => ({
+        ...prev,
+        state: TransferStateEnum.Success,
+      }));
     } catch (err) {
-      console.error("Error en la transferencia:", err);
-      setTransferState(TransferStateEnum.Error);
+      console.error("Error in transfer:", err);
+      setTransfer((prev) => ({
+        ...prev,
+        state: TransferStateEnum.Error,
+      }));
     }
   }
 
@@ -258,7 +286,7 @@ export default function TransferModal({
     setIsContactAdded(true);
 
     if (res && res.error) {
-      console.error("Error al agregar el contacto:", res.error);
+      console.error("Error adding contact:", res.error);
     }
   };
 
@@ -295,7 +323,7 @@ export default function TransferModal({
       {type === "transfer" ? (
         <DialogTrigger
           onClick={async () => {
-            const balance = await getUserBalance();
+            const balance = await getUsdcBalance();
             if (balance) {
               setUserBalance(balance);
             }
@@ -321,55 +349,66 @@ export default function TransferModal({
       <DialogContent className="bg-neutral-900">
         <div className="relative">
           <DialogHeader>
-            <DialogTitle>{getDialogTitle(transferState)}</DialogTitle>
+            <DialogTitle>{getDialogTitle(transfer.state)}</DialogTitle>
             <DialogDescription>
-              {getDialogDescription(transferState)}
+              {getDialogDescription(transfer.state)}
             </DialogDescription>
           </DialogHeader>
 
-          {transferState === "validating" && transferData ? (
+          {transfer.state === TransferStateEnum.Validating && transfer.data ? (
             /* ---------------------- Step 2: Validation ---------------------- */
             <TransferModalSecondStep
-              transferData={transferData}
-              recipient={recipient}
-              setTransferState={setTransferState}
+              transferData={transfer.data}
+              recipient={transfer.recipient}
+              setTransferState={setTransfer}
             />
-          ) : transferState === "pending" ? (
+          ) : transfer.state === "pending" ? (
             /* ----------------------- Step 3: Confirm password ---------------------- */
             <TransferModalThirdStep
               passwordForm={passwordForm}
               handlePasswordFormSubmit={handlePasswordFormSubmit}
-              setTransferState={setTransferState}
+              setTransferState={setTransfer}
               isSending={isSending}
             />
-          ) : transferState === "success" ? (
+          ) : transfer.state === "success" ? (
             /* ----------------------- Success ----------------------- */
             <TransferSuccess
               onClick={() => {
-                setTransferState(TransferStateEnum.Idle);
-                setTransactionHash(null);
-                setRecipient(null);
+                setTransfer((prev) => ({
+                  ...prev,
+                  state: TransferStateEnum.Idle,
+                  transactionHash: null,
+                  recipient: null,
+                  data: null,
+                }));
                 setUserBalance(null);
                 setUserContact(null);
-                setTransferData(null);
                 setInputError(null);
                 transferForm.reset();
                 passwordForm.reset();
               }}
-              transferData={transferData}
-              recipient={recipient}
-              transactionHash={transactionHash}
+              transferData={transfer.data}
+              recipient={transfer.recipient}
+              transactionHash={transfer.transactionHash}
               isContactAdded={isContactAdded}
               handleAddContact={handleAddContact}
             />
-          ) : transferState === "error" ? (
+          ) : transfer.state === "error" ? (
             /* ----------------------- Error ----------------------- */
             <div className="flex flex-col items-center gap-4">
-              <p className="text-red-600">
-                Ocurrió un error en la transferencia.
-              </p>
-              <Button onClick={() => setTransferState(TransferStateEnum.Idle)}>
-                Reintentar
+              <p className="text-red-600">An error occurred in the transfer.</p>
+              <Button
+                onClick={() =>
+                  setTransfer((prev) => ({
+                    ...prev,
+                    state: TransferStateEnum.Idle,
+                    data: null,
+                    recipient: null,
+                    transactionHash: null,
+                  }))
+                }
+              >
+                Retry
               </Button>
             </div>
           ) : (

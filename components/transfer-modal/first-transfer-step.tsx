@@ -15,13 +15,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-
 import { createClient } from "@/utils/supabase/client";
 import { INPUT_ERROR_TYPES } from "@/utils/constants";
 import { transferFormSchema } from "@/utils/schemas";
 import { Contact } from "@/types";
 import { XIcon } from "lucide-react";
 import { useDebounce } from "@/lib/hooks";
+import { formatUsdcBalance } from "@/lib/utils";
 import { useI18n } from "@/locales/client";
 
 type TransferModalFirstStepProps = {
@@ -71,7 +71,7 @@ export const TransferModalFirstStep = ({
     const { data, error } = await supabase
       .from("profiles")
       .select("*")
-      .ilike("email", `%${query}%`)
+      .or(`email.ilike.%${query}%,user_name.ilike.%${query}%`)
       .limit(10);
 
     if (error) {
@@ -86,7 +86,6 @@ export const TransferModalFirstStep = ({
     }
 
     setSearchResults(data);
-    console.log("searchResults:", data);
   };
 
   useDebounce(search, 500, query);
@@ -146,7 +145,7 @@ export const TransferModalFirstStep = ({
                   >
                     <div className="flex flex-col text-start items-start">
                       <span className="text-lg text-blue-50 font-bold">
-                        {userContact.first_name} {userContact.last_name}
+                        {userContact.first_name || `@${userContact.user_name}`}
                       </span>
                       <span className="text-sm text-muted-foreground">
                         {userContact.email}
@@ -173,29 +172,39 @@ export const TransferModalFirstStep = ({
                     isSearching ? "block" : "hidden"
                   }`}
                 >
-                  {searchResults.map((user) => (
-                    <button
-                      key={user.id}
-                      type="button"
-                      onClick={() => {
-                        transferForm.setValue("email", user.email);
-                        setUserContact(user);
-                        setQuery(user.email);
-                        setSearchResults([]);
-                        setIsSearching(false);
-                      }}
-                      className="w-full text-left px-3 py-2 rounded-md hover:bg-neutral-700 duration-150"
-                    >
-                      <div className="flex flex-col items-start gap-2">
-                        <span className="font-semibold">
-                          {user.first_name} {user.last_name}
-                        </span>
-                        <span className="text-muted-foreground text-sm">
-                          {user.email}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
+                  {searchResults.map((user) => {
+                    const nameAndLastName =
+                      user.first_name && user.last_name
+                        ? `${user.first_name} ${user.last_name}`
+                        : null;
+
+                    const nameOrUsername =
+                      nameAndLastName || `@${user.user_name}`;
+
+                    return (
+                      <button
+                        key={user.id}
+                        type="button"
+                        onClick={() => {
+                          transferForm.setValue("email", user.email);
+                          setUserContact(user);
+                          setQuery(user.email);
+                          setSearchResults([]);
+                          setIsSearching(false);
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-md hover:bg-neutral-700 duration-150"
+                      >
+                        <div className="flex flex-col items-start gap-2">
+                          <span className="font-semibold">
+                            {nameOrUsername}
+                          </span>
+                          <span className="text-muted-foreground text-sm">
+                            {user.email}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -214,7 +223,7 @@ export const TransferModalFirstStep = ({
                   </span>
                   <div className="flex items-center gap-2">
                     <span className="text-muted-foreground text-sm">
-                      {userBalance}
+                      {formatUsdcBalance(Number(userBalance))}
                     </span>
                     <span className="text-muted-foreground text-sm">
                       {t("wallet.crypto")}
@@ -225,11 +234,14 @@ export const TransferModalFirstStep = ({
                   <div className="flex text-3xl gap-1">
                     $
                     <Input
-                      placeholder={t("transfer.amount.placeholder")}
+                      placeholder="13.37"
                       className="border-none h-fit p-0 !text-3xl focus:outline-none focus:ring-0 bg-transparent appearance-none [::-webkit-outer-spin-button]:appearance-none [::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
                       type="number"
                       step="any"
-                      {...field}
+                      onChange={(e) => {
+                        field.onChange(e);
+                        setInputError(null);
+                      }}
                     />
                   </div>
                 </FormControl>

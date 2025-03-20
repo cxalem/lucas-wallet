@@ -28,13 +28,15 @@ export default {
   "createWallet.button": "Create account",
   "createWallet.haveAccount": "Already have an account?",
   "createWallet.login": "Login",
+  "createWallet.username.label": "Username:",
+  "createWallet.username.placeholder": "Enter your username",
 
   // Wallet page content
   "wallet.welcome": "Welcome, {name}!",
   "wallet.balanceDescription": "This is your balance",
   "wallet.balanceLabel": "Balance",
   "wallet.currency": "USD",
-  "wallet.crypto": "ETH",
+  "wallet.crypto": "USDC",
 
   // Add Contact component
   "contacts.add": "Add Contact",
@@ -49,7 +51,7 @@ export default {
     "You have no contacts or recent transactions to display",
 
   // Contact Card component
-  "contacts.card.altText": "{firstName} {lastName}",
+  "contacts.card.altText": "{user_name}",
 
   // Contacts List component
   "contacts.list.title": "Transfer funds to your contacts",
