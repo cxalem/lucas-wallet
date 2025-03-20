@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Lucas Wallet",
-  description: "La billetera digital de toda Venezuela",
+  description: "The easiest AI wallet to use!",
 };
 
 export default function RootLayout({
