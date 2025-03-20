@@ -106,7 +106,7 @@ export const sendSolanaTransaction = async (
   amount: number
 ) => {
   const connection = new Connection(
-    "https://go.getblock.io/ac564b707a87486092ed81f6cdcb2a4b",
+    process.env.NEXT_PUBLIC_GO_GETBLOCK_URL!,
     "confirmed"
   );
 
@@ -161,25 +161,22 @@ export const sendSolanaTransaction = async (
 
   await getSenderAccountInfo(connection, senderTokenAccount, from);
 
-  const response = await fetch(
-    "https://go.getblock.io/ac564b707a87486092ed81f6cdcb2a4b",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        jsonrpc: "2.0",
-        id: 1,
-        method: "sendTransaction",
-        params: [
-          base64Transaction,
-          {
-            encoding: "base64",
-            maxRetries: 5,
-          },
-        ],
-      }),
-    }
-  );
+  const response = await fetch(process.env.NEXT_PUBLIC_GO_GETBLOCK_URL!, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      id: 1,
+      method: "sendTransaction",
+      params: [
+        base64Transaction,
+        {
+          encoding: "base64",
+          maxRetries: 5,
+        },
+      ],
+    }),
+  });
 
   const result = await response.json();
 
