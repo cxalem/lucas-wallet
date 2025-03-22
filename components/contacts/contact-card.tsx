@@ -30,7 +30,7 @@ export const ContactCard = ({
   const nameOrUsername = (contact: Contact) => {
     return contact.first_name
       ? `${contact.first_name} ${contact.last_name}`
-      : `${contact.user_name}`;
+      : `@${contact.user_name}`;
   };
 
   const getInitials = (contact: Contact) => {
