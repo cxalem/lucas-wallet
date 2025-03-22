@@ -138,7 +138,7 @@ export async function transferSolana(
  * @returns The transaction result from the network.
  */
 export const sendSolanaTransaction = async (
-  from: Keypair,
+  from: Uint8Array<ArrayBuffer>,
   to: PublicKey,
   amount: number
 ) => {
@@ -149,9 +149,11 @@ export const sendSolanaTransaction = async (
 
   const transaction = new Transaction();
   const usdcMint = new PublicKey(USDC_MINT_ADDRESS);
+  const senderKeypair = Keypair.fromSecretKey(from);
+  
   const senderTokenAccount = await getAssociatedTokenAddress(
     usdcMint,
-    from.publicKey
+    senderKeypair.publicKey
   );
   const receiverTokenAccount = await getAssociatedTokenAddress(
     usdcMint,
@@ -167,7 +169,7 @@ export const sendSolanaTransaction = async (
     );
     transaction.add(
       createAssociatedTokenAccountInstruction(
-        from.publicKey,
+        senderKeypair.publicKey,
         receiverTokenAccount,
         to,
         usdcMint
@@ -179,7 +181,7 @@ export const sendSolanaTransaction = async (
     createTransferInstruction(
       senderTokenAccount,
       receiverTokenAccount,
-      from.publicKey,
+      senderKeypair.publicKey,
       amount * 1e6
     )
   );
@@ -187,13 +189,13 @@ export const sendSolanaTransaction = async (
   transaction.recentBlockhash = (
     await connection.getLatestBlockhash("finalized")
   ).blockhash;
-  transaction.feePayer = from.publicKey;
-  transaction.sign(from);
+  transaction.feePayer = senderKeypair.publicKey;
+  transaction.sign(senderKeypair);
 
   const serializedTransaction = transaction.serialize();
   const base64Transaction = base64.fromByteArray(serializedTransaction);
 
-  await getSenderAccountInfo(connection, senderTokenAccount, from);
+  await getSenderAccountInfo(connection, senderTokenAccount, senderKeypair);
 
   const response = await fetch(process.env.NEXT_PUBLIC_GO_GETBLOCK_URL!, {
     method: "POST",

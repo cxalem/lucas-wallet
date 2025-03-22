@@ -181,8 +181,8 @@ export default function TransferModal({
       );
 
       const signature = await sendSolanaTransaction(
-        senderKeypair,
-        recipientPublicKey,
+        privateKeyUint8Array,
+        transfer.recipient.wallet_address,
         transfer.data.amount
       );
 
