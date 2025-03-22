@@ -25,10 +25,11 @@ export default function RootLayout({
 }>) {
   return (
     <main
-      className={`${geistSans.variable} ${geistMono.variable} dark:bg-neutral-900 bg-[url('/background-image.webp')] bg-fixed bg-no-repeat bg-cover dark:text-blue-50 bg-neutral-100 text-foreground antialiased text-zinc-800 min-h-screen`}
+      className={`${geistSans.variable} ${geistMono.variable} min-h-screen`}
     >
+      <div className="fixed inset-0 w-full h-full bg-repeat bg-noise opacity-10 bg-[length:250px] -z-10"></div>
+
       <Navbar />
-      <div className="fixed inset-0 w-full h-full bg-repeat bg-noise opacity-10 bg-[length:350px] z-[-20]"></div>
       {children}
     </main>
   );

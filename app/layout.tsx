@@ -27,7 +27,7 @@ export default function RootLayout({
     <html lang="en" className="relative dark">
       <Providers>
         <body
-          className={`${geistSans.variable} ${geistMono.variable} dark:text-blue-50 bg-neutral-100 text-foreground antialiased text-zinc-800`}
+          className={`${geistSans.variable} ${geistMono.variable} dark:bg-gradient-to-b from-neutral-950 to-neutral-900 relative bg-neutral-100 text-foreground antialiased text-zinc-800 dark:text-blue-50 min-h-screen`}
         >
           {children}
         </body>
