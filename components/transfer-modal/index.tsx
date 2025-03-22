@@ -26,11 +26,12 @@ import {
   addTransactionToDb,
   decryptPrivateKey,
   getUsdcBalance,
+  sendSolanaTransaction,
 } from "./actions";
 import { ContactCard } from "../contacts/contact-card";
 import { addContact, getContact } from "../contacts/actions";
 import { TransferSuccess } from "./success-step";
-import { sendSolanaTransaction } from "@/utils/solana/helpers";
+
 import { Keypair, PublicKey } from "@solana/web3.js";
 
 type TransferModalProps = {
