@@ -65,10 +65,12 @@ export default {
   "contacts.error.noUser": "No user dey",
 
   // Transfer Modal First Step component
-  "transfer.email.label": "Email",
-  "transfer.email.placeholder": "Person wey go collect email",
+  "transfer.email.label": "Email, Username or Wallet Address",
+  "transfer.email.placeholder":
+    "Person wey go collect email, username or wallet address",
   "transfer.email.description":
-    "Add the email of the account wey you wan transfer money to.",
+    "Add the data of the account wey you wan transfer money to.",
+  "transfer.invalidAddressError": "Invalid wallet address",
   "transfer.email.error": "{message} here",
   "transfer.recipient.warning":
     "(*) Make sure say na correct person you dey send to",

@@ -67,10 +67,11 @@ export default {
   "contacts.error.noUser": "Aucun utilisateur trouvé",
 
   // Transfer Modal First Step component
-  "transfer.email.label": "Email",
-  "transfer.email.placeholder": "Email du destinataire",
+  "transfer.email.label": "Email, Username ou Wallet Address",
+  "transfer.email.placeholder": "Email du destinataire, username ou wallet address",
   "transfer.email.description":
-    "Ajoutez l'email du compte vers lequel vous souhaitez effectuer un transfert.",
+    "Ajoutez les informations du compte vers lequel vous souhaitez effectuer un transfert.",
+  "transfer.invalidAddressError": "Adresse de wallet invalide",
   "transfer.email.error": "{message} ici",
   "transfer.recipient.warning":
     "(*) Assurez-vous que c'est le bon destinataire",

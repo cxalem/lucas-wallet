@@ -65,10 +65,11 @@ export default {
   "contacts.error.noUser": "কোন ব্যবহারকারী পাওয়া যায়নি",
 
   // Transfer Modal First Step component
-  "transfer.email.label": "ইমেইল",
-  "transfer.email.placeholder": "প্রাপকের ইমেইল",
+  "transfer.email.label": "ইমেইল, ইউজারনেম বা ওয়ালেট ঠিকানা",
+  "transfer.email.placeholder": "প্রাপকের ইমেইল, ইউজারনেম বা ওয়ালেট ঠিকানা",
   "transfer.email.description":
-    "যে অ্যাকাউন্টে আপনি অর্থ পাঠাতে চান তার ইমেইল যোগ করুন।",
+    "যে অ্যাকাউন্টে আপনি অর্থ পাঠাতে চান তার ইমেইল, ইউজারনেম বা ওয়ালেট ঠিকানা যোগ করুন।",
+  "transfer.invalidAddressError": "ভুল ওয়ালেট ঠিকানা",
   "transfer.email.error": "{message} এখানে",
   "transfer.recipient.warning": "(*) নিশ্চিত করুন যে এটি সঠিক প্রাপক",
   "transfer.amount.label": "পাঠানোর পরিমাণ",
