@@ -54,7 +54,9 @@ export default async function CreateWalletPage() {
           </div>
           <Button
             className="bg-violet-600 hover:bg-violet-700 w-full text-blue-50 rounded-full max-w-sm"
-            formAction={signup}
+            formAction={() => {
+              console.log("Not working yet")
+            }}
           >
             {t("createWallet.button")}
           </Button>
