@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { signup } from "./actions";
+// import { signup } from "./actions";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { getI18n } from "@/locales/server";
