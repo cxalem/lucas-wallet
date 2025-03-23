@@ -71,16 +71,12 @@ export const TransferSuccess = ({
 
       <div className="flex w-full gap-3">
         <DialogClose asChild>
-          <Button className="w-full" onClick={onClick}>
+          <Button className="w-full" variant={"secondary"} onClick={onClick}>
             {t("transfer.success.close")}
           </Button>
         </DialogClose>
         {!isContactAdded && !recipient?.wallet_address && (
-          <Button
-            onClick={handleAddContact}
-            variant={"secondary"}
-            className="flex items-center"
-          >
+          <Button onClick={handleAddContact} className="flex items-center">
             <UserRoundPen className="w-4 h-4" />{" "}
             {t("transfer.success.addContact")}
           </Button>
