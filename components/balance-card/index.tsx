@@ -19,9 +19,14 @@ export const BalanceCard = ({
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["usdcBalance", user_metadata.wallet_address],
+    queryKey: [
+      "usdcBalance",
+      {
+        walletAddress: user_metadata.wallet_address,
+      },
+    ],
     queryFn: getUsdcBalance,
-    refetchInterval: 30000,
+    refetchInterval: 60000,
   });
 
   if (isLoading) return <BalanceCardSkeleton />;

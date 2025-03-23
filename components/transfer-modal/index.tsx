@@ -34,6 +34,7 @@ import { TransferSuccess } from "./success-step";
 
 import { Keypair, PublicKey } from "@solana/web3.js";
 import { isValidSolanaAddress } from "@/lib/utils";
+import { useQueryClient } from "@tanstack/react-query";
 
 type TransferModalProps = {
   type?: "transfer" | "contact";
@@ -94,6 +95,8 @@ export default function TransferModal({
       password: "",
     },
   });
+
+  const queryClient = useQueryClient();
 
   async function handleTransferFormSubmit(
     values: z.infer<typeof transferFormSchema>
@@ -336,6 +339,46 @@ export default function TransferModal({
     return isContact;
   };
 
+  const handleClose = async () => {
+    const loggedUser = await supabase.auth.getUser();
+
+    if (!loggedUser?.data.user) {
+      console.error("There is no logged user");
+      return;
+    }
+
+    queryClient.invalidateQueries({
+      queryKey: [
+        "usdcBalance",
+        {
+          walletAddress: loggedUser.data.user.user_metadata.wallet_address,
+        },
+      ],
+    });
+
+    queryClient.invalidateQueries({
+      queryKey: [
+        "contacts",
+        {
+          userId: loggedUser.data.user.id,
+        },
+      ],
+    });
+
+    setTransfer((prev) => ({
+      ...prev,
+      state: TransferStateEnum.Idle,
+      transactionHash: null,
+      recipient: null,
+      data: null,
+    }));
+    setUserBalance(null);
+    setUserContact(null);
+    setInputError(null);
+    transferForm.reset();
+    passwordForm.reset();
+  };
+
   return (
     <Dialog>
       {type === "transfer" ? (
@@ -391,20 +434,7 @@ export default function TransferModal({
           ) : transfer.state === "success" ? (
             /* ----------------------- Success ----------------------- */
             <TransferSuccess
-              onClick={() => {
-                setTransfer((prev) => ({
-                  ...prev,
-                  state: TransferStateEnum.Idle,
-                  transactionHash: null,
-                  recipient: null,
-                  data: null,
-                }));
-                setUserBalance(null);
-                setUserContact(null);
-                setInputError(null);
-                transferForm.reset();
-                passwordForm.reset();
-              }}
+              onClick={handleClose}
               transferData={transfer.data}
               recipient={transfer.recipient}
               transactionHash={transfer.transactionHash}

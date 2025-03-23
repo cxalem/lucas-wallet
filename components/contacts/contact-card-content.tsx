@@ -20,9 +20,14 @@ export const ContactCardContent = ({ loggedUser }: { loggedUser: User }) => {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["contacts", loggedUser.id],
+    queryKey: [
+      "contacts",
+      {
+        userId: loggedUser.id,
+      },
+    ],
     queryFn: () => getContacts(loggedUser),
-    refetchInterval: 30000,
+    refetchInterval: 60000,
   });
 
   if (isLoading) return <ContactCardLoading />;
