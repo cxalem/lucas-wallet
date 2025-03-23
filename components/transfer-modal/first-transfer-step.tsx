@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { z } from "zod";
 
@@ -37,6 +37,16 @@ type TransferModalFirstStepProps = {
     error: (typeof INPUT_ERROR_TYPES)[keyof typeof INPUT_ERROR_TYPES] | null
   ) => void;
 };
+
+/**
+ * TransferModalFirstStep
+ *
+ * This component is the first step in a multi-step transfer modal.
+ * It handles:
+ * - Searching and selecting a recipient by email.
+ * - Displaying the user's USDC balance.
+ * - Accepting the transfer amount.
+ */
 export const TransferModalFirstStep = ({
   transferForm,
   setUserContact,
@@ -53,16 +63,27 @@ export const TransferModalFirstStep = ({
 
   const supabase = createClient();
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(e.target.value);
-    setInputError(null);
+  /**
+   * Handles the input change event for the email search field.
+   */
+  const handleSearchInput = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      setQuery(value);
+      setInputError(null);
+      // Update form value immediately
+      transferForm.setValue("email", value);
+      if (value.length === 0) {
+        setSearchResults([]);
+      }
+    },
+    [setInputError, transferForm]
+  );
 
-    if (e.target.value.length === 0) {
-      setSearchResults([]);
-    }
-  };
-
-  const search = async () => {
+  /**
+   * Executes a debounced search against the profiles table.
+   */
+  const performSearch = useCallback(async () => {
     if (!query) {
       setSearchResults([]);
       return;
@@ -86,9 +107,113 @@ export const TransferModalFirstStep = ({
     }
 
     setSearchResults(data);
-  };
+  }, [query, supabase, t]);
 
-  useDebounce(search, 500, query);
+  // Debounce the search function with a delay of 500ms
+  useDebounce(performSearch, 500, query);
+
+  /**
+   * Renders the email input field for the transfer form.
+   */
+  const renderEmailInput = () => (
+    <FormItem className="flex flex-col gap-2 space-y-0 justify-between mt-6">
+      <FormLabel>{t("transfer.email.label")}</FormLabel>
+      <FormControl>
+        <Input
+          autoComplete="off"
+          onFocus={() => setIsSearching(true)}
+          placeholder={t("transfer.email.placeholder")}
+          value={query}
+          onChange={handleSearchInput}
+          className={inputError ? "border-red-600" : ""}
+        />
+      </FormControl>
+      <FormDescription>
+        {!inputError ? (
+          t("transfer.email.description")
+        ) : (
+          <span className="text-red-600">
+            {t("transfer.email.error", { message: inputError?.message })}
+          </span>
+        )}
+      </FormDescription>
+      <FormMessage />
+    </FormItem>
+  );
+
+  /**
+   * Renders the selected contact information with an option to clear the selection.
+   */
+  const renderSelectedContact = () => (
+    <div className="flex flex-col gap-2 mt-6">
+      <Button
+        onClick={() => {
+          transferForm.setValue("email", "");
+          setUserContact(null);
+          setQuery("");
+        }}
+        className="flex justify-between bg-neutral-800 w-full h-fit px-3 py-1 hover:bg-neutral-700"
+      >
+        <div className="flex flex-col text-start items-start">
+          <span className="text-lg text-blue-50 font-bold">
+            {userContact?.first_name || `@${userContact?.user_name}`}
+          </span>
+          <span className="text-sm text-muted-foreground">
+            {userContact?.email}
+          </span>
+        </div>
+        <XIcon className="w-4 h-4 text-muted-foreground" />
+      </Button>
+      {inputError ? (
+        <span className="text-red-400 px-2">{inputError?.message}</span>
+      ) : (
+        <span className="text-muted-foreground text-sm">
+          {t("transfer.recipient.warning")}
+        </span>
+      )}
+    </div>
+  );
+
+  /**
+   * Renders the dropdown with search results.
+   */
+  const renderSearchResults = () => (
+    <div
+      className={`absolute mt-2 border border-neutral-700 rounded-lg bg-neutral-800 w-full top-16 ${
+        isSearching ? "block" : "hidden"
+      }`}
+    >
+      {searchResults.map((user) => {
+        const fullName =
+          user.first_name && user.last_name
+            ? `${user.first_name} ${user.last_name}`
+            : null;
+        const displayName = fullName || `@${user.user_name}`;
+
+        return (
+          <button
+            key={user.id}
+            type="button"
+            onClick={() => {
+              transferForm.setValue("email", user.email);
+              setUserContact(user);
+              setQuery(user.email);
+              setSearchResults([]);
+              setIsSearching(false);
+            }}
+            className="w-full text-left px-3 py-2 rounded-md hover:bg-neutral-700 duration-150"
+          >
+            <div className="flex flex-col items-start gap-2">
+              <span className="font-semibold">{displayName}</span>
+              <span className="text-muted-foreground text-sm">
+                {user.email}
+              </span>
+            </div>
+          </button>
+        );
+      })}
+    </div>
+  );
 
   return (
     <Form {...transferForm}>
@@ -99,114 +224,13 @@ export const TransferModalFirstStep = ({
         <FormField
           control={transferForm.control}
           name="email"
-          render={({ field }) => (
-            <div className="h-28">
-              <FormItem
-                className={`${
-                  userContact ? "hidden" : "flex flex-col gap-2"
-                } space-y-0 justify-between mt-6`}
-              >
-                <FormLabel>{t("transfer.email.label")}</FormLabel>
-                <FormControl>
-                  <Input
-                    autoComplete="off"
-                    onFocus={() => setIsSearching(true)}
-                    placeholder={t("transfer.email.placeholder")}
-                    value={userContact?.email || field.value}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      handleSearch(e);
-                    }}
-                    className={inputError ? "border-red-600" : ""}
-                  />
-                </FormControl>
-                <FormDescription>
-                  {!inputError ? (
-                    t("transfer.email.description")
-                  ) : (
-                    <span className="text-red-600">
-                      {t("transfer.email.error", {
-                        message: inputError?.message,
-                      })}
-                    </span>
-                  )}
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-
-              {userContact && (
-                <div className="flex flex-col gap-2 mt-6">
-                  <Button
-                    onClick={() => {
-                      transferForm.setValue("email", "");
-                      setUserContact(null);
-                    }}
-                    className="flex justify-between bg-neutral-800 w-full h-fit px-3 py-1 hover:bg-neutral-700"
-                  >
-                    <div className="flex flex-col text-start items-start">
-                      <span className="text-lg text-blue-50 font-bold">
-                        {userContact.first_name || `@${userContact.user_name}`}
-                      </span>
-                      <span className="text-sm text-muted-foreground">
-                        {userContact.email}
-                      </span>
-                    </div>
-                    <XIcon className="w-4 h-4 text-muted-foreground" />
-                  </Button>
-
-                  {inputError ? (
-                    <span className="text-red-400 px-2">
-                      {inputError?.message}
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground text-sm">
-                      {t("transfer.recipient.warning")}
-                    </span>
-                  )}
-                </div>
-              )}
-
-              {query && !userContact && searchResults.length > 0 && (
-                <div
-                  className={`absolute mt-2 border border-neutral-700 rounded-lg bg-neutral-800 w-full top-28 ${
-                    isSearching ? "block" : "hidden"
-                  }`}
-                >
-                  {searchResults.map((user) => {
-                    const nameAndLastName =
-                      user.first_name && user.last_name
-                        ? `${user.first_name} ${user.last_name}`
-                        : null;
-
-                    const nameOrUsername =
-                      nameAndLastName || `@${user.user_name}`;
-
-                    return (
-                      <button
-                        key={user.id}
-                        type="button"
-                        onClick={() => {
-                          transferForm.setValue("email", user.email);
-                          setUserContact(user);
-                          setQuery(user.email);
-                          setSearchResults([]);
-                          setIsSearching(false);
-                        }}
-                        className="w-full text-left px-3 py-2 rounded-md hover:bg-neutral-700 duration-150"
-                      >
-                        <div className="flex flex-col items-start gap-2">
-                          <span className="font-semibold">
-                            {nameOrUsername}
-                          </span>
-                          <span className="text-muted-foreground text-sm">
-                            {user.email}
-                          </span>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
+          render={() => (
+            <div className="relative h-28">
+              {userContact ? renderSelectedContact() : renderEmailInput()}
+              {query &&
+                !userContact &&
+                searchResults.length > 0 &&
+                renderSearchResults()}
             </div>
           )}
         />
