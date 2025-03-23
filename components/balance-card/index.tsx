@@ -1,15 +1,32 @@
-import type { UserMetadata } from "@supabase/supabase-js";
-import { getUsdcBalance } from "./transfer-modal/actions";
-import { formatUsdcBalance } from "@/lib/utils";
-import { getI18n } from "@/locales/server";
+"use client";
 
-export const BalanceCard = async ({
+import type { UserMetadata } from "@supabase/supabase-js";
+import { getUsdcBalance } from "../transfer-modal/actions";
+import { formatUsdcBalance } from "@/lib/utils";
+import { useI18n } from "@/locales/client";
+import { useQuery } from "@tanstack/react-query";
+import { BalanceCardSkeleton } from "./balance-card-skeleton";
+
+export const BalanceCard = ({
   user_metadata,
 }: {
   user_metadata: UserMetadata;
 }) => {
-  const t = await getI18n();
-  const usdcBalance = await getUsdcBalance();
+  const t = useI18n();
+
+  const {
+    data: usdcBalance,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["usdcBalance", user_metadata.wallet_address],
+    queryFn: getUsdcBalance,
+    refetchInterval: 30000,
+  });
+
+  if (isLoading) return <BalanceCardSkeleton />;
+  if (error) return <div>Error al cargar el balance</div>;
+
   const nameOrUsername = user_metadata.user_name || user_metadata.first_name;
 
   return (
