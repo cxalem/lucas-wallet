@@ -75,12 +75,13 @@ export const TransferSuccess = ({
             {t("transfer.success.close")}
           </Button>
         </DialogClose>
-        {!isContactAdded && !recipient?.wallet_address && (
-          <Button onClick={handleAddContact} className="flex items-center">
-            <UserRoundPen className="w-4 h-4" />{" "}
-            {t("transfer.success.addContact")}
-          </Button>
-        )}
+        {!isContactAdded &&
+          recipient?.user_name != recipient?.wallet_address && (
+            <Button onClick={handleAddContact} className="flex items-center">
+              <UserRoundPen className="w-4 h-4" />{" "}
+              {t("transfer.success.addContact")}
+            </Button>
+          )}
       </div>
     </div>
   );
