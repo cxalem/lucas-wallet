@@ -1,3 +1,4 @@
+import { isValidSolanaAddress } from "@/lib/utils";
 import { z } from "zod";
 
 /**
@@ -6,11 +7,23 @@ import { z } from "zod";
  * - Enforce a minimum positive amount (e.g. > 0).
  */
 export const transferFormSchema = z.object({
-  email: z.string().email({ message: "" }),
+  email: z.string().refine(
+    (val) => {
+      // If the value contains an "@" symbol, validate as an email.
+      if (val.includes("@")) {
+        return z.string().email().safeParse(val).success;
+      }
+      // If the value is long enough, validate as a Solana wallet address.
+      if (val.length >= 32) {
+        return isValidSolanaAddress(val);
+      }
+      // Otherwise, treat the value as a username (non-empty).
+      return val.trim().length > 0;
+    },
+    { message: "Enter a valid email, wallet address, or username." }
+  ),
   amount: z.coerce
-    .number({
-      invalid_type_error: "Enter a number for the amount.",
-    })
+    .number({ invalid_type_error: "Enter a number for the amount." })
     .positive("The amount must be greater than 0."),
 });
 
