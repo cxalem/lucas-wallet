@@ -5,7 +5,7 @@ export default {
   "home.balance.label": "Saldo disponible",
   "home.balance.amount": "$23.877",
   "home.balance.crypto": "USDT 23.867",
-  "home.cta.button": "Comenzar ahora",
+  "home.cta.button": "Comienza ahora",
   "home.cta.description":
     "Necesitas acceder a tu cuenta para empezar a recibir dinero.",
 
