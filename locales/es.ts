@@ -1,6 +1,6 @@
 export default {
   // Homepage content
-  "home.title": "Enviar y Recibir Dinero",
+  "home.title": "Envia y Recibe Dinero",
   "home.subtitle": "Cuando quieras, donde quieras",
   "home.balance.label": "Saldo disponible",
   "home.balance.amount": "$23.877",
