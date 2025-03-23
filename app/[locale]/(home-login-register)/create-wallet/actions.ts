@@ -106,3 +106,7 @@ export async function signup(formData: FormData) {
   revalidatePath("/", "layout");
   redirect("/");
 }
+
+export const placeHolderFunction = async () => {
+  console.log("Not working yet");
+};
