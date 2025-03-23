@@ -7,10 +7,26 @@ import { CardContent } from "@/components/ui/card";
 import { Contact } from "@/types";
 import TransferModal from "../transfer-modal";
 import { useI18n } from "@/locales/client";
-
-export const ContactCardContent = ({ contacts }: { contacts: Contact[] }) => {
+import { useQuery } from "@tanstack/react-query";
+import { User } from "@supabase/supabase-js";
+import { getContacts } from "./actions";
+import { ContactCardLoading } from "./contact-card-loading";
+export const ContactCardContent = ({ loggedUser }: { loggedUser: User }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const t = useI18n();
+
+  const {
+    data: contacts,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["contacts", loggedUser.id],
+    queryFn: () => getContacts(loggedUser),
+    refetchInterval: 30000,
+  });
+
+  if (isLoading) return <ContactCardLoading />;
+  if (error || !contacts) return <div>Error: {error?.message}</div>;
 
   const sortedContacts = [...contacts].sort((a, b) => {
     if (!a.lastTransaction) return 1;
@@ -24,9 +40,11 @@ export const ContactCardContent = ({ contacts }: { contacts: Contact[] }) => {
       : `${contact.user_name}`;
   };
 
-  const filteredContacts = sortedContacts.filter((contact) =>
-    nameOrUsername(contact).toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredContacts = sortedContacts
+    .reverse()
+    .filter((contact) =>
+      nameOrUsername(contact).toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
   return (
     <CardContent className="pl-6 pr-6 pb-6 pt-2">

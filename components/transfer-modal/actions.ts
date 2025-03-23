@@ -150,7 +150,7 @@ export const sendSolanaTransaction = async (
   const transaction = new Transaction();
   const usdcMint = new PublicKey(USDC_MINT_ADDRESS);
   const senderKeypair = Keypair.fromSecretKey(from);
-  
+
   const senderTokenAccount = await getAssociatedTokenAddress(
     usdcMint,
     senderKeypair.publicKey
@@ -272,7 +272,7 @@ export const getUsdcBalance = async () => {
     ? tokenAccounts.value[0].account.data.parsed.info.tokenAmount.uiAmount
     : 0;
 
-  return usdcBalance;
+  return usdcBalance || 0;
 };
 
 // ======== Encryption Utilities ========

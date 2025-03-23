@@ -2,11 +2,11 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import TransferModal from "@/components/transfer-modal";
 import ContactsList from "@/components/contacts";
-import { BalanceCard } from "@/components/balance-card";
 import { I18nProviderClient } from "@/locales/client";
 import { getCurrentLocale } from "@/locales/server";
 import { Suspense } from "react";
-import { BalanceCardSkeleton } from "@/components/balance-card-skeleton";
+import { BalanceCardSkeleton } from "@/components/balance-card/balance-card-skeleton";
+import { BalanceCard } from "@/components/balance-card"
 
 export default async function PrivatePage() {
   const supabase = await createClient();
