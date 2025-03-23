@@ -52,7 +52,9 @@ export const TransferModalSecondStep = ({
       <div className="text-zinc-50 gap-1 flex flex-col mt-4">
         <span className="text-zinc-400">{t("transfer.to.label")}</span>
         <div className="flex flex-col gap-1 bg-neutral-800 px-4 py-2 rounded-lg">
-          <span className="font-semibold text-2xl">{nameOrUsername}</span>{" "}
+          <span className="font-semibold text-2xl max-w-sm truncate">
+            {nameOrUsername}
+          </span>{" "}
           <span className="text-zinc-400">{recipient?.email}</span>
         </div>
       </div>

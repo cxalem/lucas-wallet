@@ -8,6 +8,7 @@ import { z } from "zod";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { Button } from "../ui/button";
 import { useI18n } from "@/locales/client";
+import { PublicKey } from "@solana/web3.js";
 
 type TransferSuccessProps = {
   onClick: () => void;
@@ -16,6 +17,7 @@ type TransferSuccessProps = {
     first_name: string;
     last_name: string;
     user_name: string;
+    wallet_address: PublicKey;
   } | null;
   transactionHash: string | null;
   isContactAdded: boolean | undefined;
@@ -51,7 +53,9 @@ export const TransferSuccess = ({
         <span className="text-zinc-50 text-opacity-70">
           {t("transfer.success.to")}
         </span>
-        <span className="text-zinc-50 font-bold text-xl">{recipientName}</span>
+        <span className="text-zinc-50 font-bold text-xl max-w-sm truncate">
+          {recipientName}
+        </span>
       </div>
 
       <div className="flex px-1 w-full mt-2">
@@ -71,7 +75,7 @@ export const TransferSuccess = ({
             {t("transfer.success.close")}
           </Button>
         </DialogClose>
-        {!isContactAdded && (
+        {!isContactAdded && !recipient?.wallet_address && (
           <Button
             onClick={handleAddContact}
             variant={"secondary"}

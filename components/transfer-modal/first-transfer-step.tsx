@@ -21,7 +21,7 @@ import { transferFormSchema } from "@/utils/schemas";
 import { Contact } from "@/types";
 import { XIcon } from "lucide-react";
 import { useDebounce } from "@/lib/hooks";
-import { formatUsdcBalance } from "@/lib/utils";
+import { formatUsdcBalance, isValidSolanaAddress } from "@/lib/utils";
 import { useI18n } from "@/locales/client";
 
 type TransferModalFirstStepProps = {
@@ -76,19 +76,47 @@ export const TransferModalFirstStep = ({
       if (value.length === 0) {
         setSearchResults([]);
       }
+      // If input length suggests it could be a wallet address.
+      if (value.length >= 32) {
+        if (isValidSolanaAddress(value)) {
+          console.log("Valid wallet address:", value);
+          // Valid wallet address: set as recipient and bypass search.
+          setUserContact({
+            // Using the wallet address as id and email for display purposes.
+            id: value,
+            email: value,
+            user_name: value,
+            wallet_address: value,
+          } as Contact);
+          setSearchResults([]);
+          return;
+        } else {
+          // Looks like a wallet address candidate but invalid.
+          setInputError({
+            type: "invalid-address",
+            message: t("transfer.invalidAddressError"),
+          });
+          setUserContact(null);
+          setSearchResults([]);
+          return;
+        }
+      }
+
+      // If not a wallet address candidate, clear any wallet contact.
+      setUserContact(null);
     },
-    [setInputError, transferForm]
+    [transferForm, setInputError, setUserContact, t]
   );
 
   /**
    * Executes a debounced search against the profiles table.
    */
   const performSearch = useCallback(async () => {
+    if (isValidSolanaAddress(query)) return;
     if (!query) {
       setSearchResults([]);
       return;
     }
-
     const { data, error } = await supabase
       .from("profiles")
       .select("*")
@@ -145,7 +173,7 @@ export const TransferModalFirstStep = ({
    * Renders the selected contact information with an option to clear the selection.
    */
   const renderSelectedContact = () => (
-    <div className="flex flex-col gap-2 mt-6">
+    <div className="flex flex-col gap-2 mt-6 max-w-md">
       <Button
         onClick={() => {
           transferForm.setValue("email", "");
@@ -155,7 +183,7 @@ export const TransferModalFirstStep = ({
         className="flex justify-between bg-neutral-800 w-full h-fit px-3 py-1 hover:bg-neutral-700"
       >
         <div className="flex flex-col text-start items-start">
-          <span className="text-lg text-blue-50 font-bold">
+          <span className="text-lg text-blue-50 font-bold max-w-sm truncate">
             {userContact?.first_name || `@${userContact?.user_name}`}
           </span>
           <span className="text-sm text-muted-foreground">

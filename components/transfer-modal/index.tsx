@@ -33,6 +33,7 @@ import { addContact, getContact } from "../contacts/actions";
 import { TransferSuccess } from "./success-step";
 
 import { Keypair, PublicKey } from "@solana/web3.js";
+import { isValidSolanaAddress } from "@/lib/utils";
 
 type TransferModalProps = {
   type?: "transfer" | "contact";
@@ -98,6 +99,22 @@ export default function TransferModal({
     values: z.infer<typeof transferFormSchema>
   ) {
     try {
+      if (isValidSolanaAddress(values.email)) {
+        setTransfer((prev) => ({
+          ...prev,
+          state: TransferStateEnum.Validating,
+          data: values,
+          recipient: {
+            wallet_address: values.email as unknown as PublicKey,
+            email: values.email,
+            first_name: "",
+            last_name: "",
+            user_name: values.email,
+          },
+          transactionHash: null,
+        }));
+        return;
+      }
       const loggedUser = await supabase.auth.getUser();
 
       const { data, error } = await supabase
