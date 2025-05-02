@@ -182,7 +182,7 @@ export default function ParticleBackground() {
       window.removeEventListener("mousemove", handleMouseMove);
       cancelAnimationFrame(animationRef.current);
     };
-  }, [mousePosition]);
+  }, []);
 
   return (
     <canvas
