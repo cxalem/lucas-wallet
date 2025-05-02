@@ -44,6 +44,8 @@ export default {
   "wallet.balanceLabel": "Solde",
   "wallet.currency": "EUR",
   "wallet.crypto": "USDC",
+  "wallet.error": "Erreur de chargement du solde",
+  "wallet.myWallet": "Mon Portefeuille",
 
   // Add Contact component
   "contacts.add": "Ajouter un contact",
@@ -128,4 +130,56 @@ export default {
 
   // Sign Out Button component
   "signOut.button": "Déconnexion",
+
+  // Transfer Modal (index.tsx, steps)
+  "transfer.title.confirm": "Confirmer le Transfert",
+  "transfer.title.confirmPassword": "Confirmer le Mot de Passe",
+  "transfer.title.processing": "Traitement de la Transaction",
+  "transfer.title.success": "Transfert Réussi !",
+  "transfer.title.failed": "Échec du Transfert",
+  "transfer.title.default": "Transférer des Fonds",
+
+  "transfer.description.confirm": "Veuillez vérifier les détails avant de confirmer.",
+  "transfer.description.confirmPassword": "Entrez votre mot de passe pour autoriser cette transaction.",
+  "transfer.description.processing": "Votre transaction est en cours de traitement sécurisé.",
+  "transfer.description.success": "Les fonds ont été envoyés avec succès.",
+  "transfer.description.failed": "Une erreur s'est produite lors du transfert. Veuillez réessayer.",
+  "transfer.description.default": "Entrez le destinataire et le montant.",
+
+  "transfer.button.trigger": "Transférer",
+  "transfer.button.retry": "Réessayer",
+  "transfer.button.close": "Fermer",
+  "transfer.button.done": "Terminé",
+  "transfer.button.confirmTransfer": "Confirmer le Transfert",
+
+  "transfer.label.externalAddress": "Adresse Externe",
+  "transfer.label.amountToSend": "Montant à Envoyer",
+
+  "transfer.status.processing": "Traitement de la Transaction...",
+  "transfer.status.processingDescription": "Veuillez patienter pendant que nous envoyons vos fonds en toute sécurité.",
+
+  "transfer.success.title": "Transfert Réussi",
+  "transfer.success.description": "Vous avez envoyé {amount} à {name}",
+  "transfer.success.txLabel": "Tx :",
+  "transfer.success.copied": "Copié !",
+  "transfer.success.copyHash": "Copier le Hash",
+  "transfer.success.viewOnSolscan": "Voir sur Solscan",
+  "transfer.success.addContactButton": "Ajouter {name} aux Contacts",
+  "transfer.success.addedToContacts": "✓ Ajouté aux contacts",
+  "transfer.success.aria.copied": "Hash de transaction copié",
+  "transfer.success.aria.copyHash": "Copier le hash de transaction",
+  "transfer.success.aria.viewOnSolscan": "Voir la transaction sur Solscan",
+
+  // Error messages
+  "transfer.error.generic": "Une erreur s'est produite lors du transfert.",
+  "transfer.error.findUser": "Échec de la recherche de l'utilisateur. Veuillez vérifier les détails et réessayer.",
+  "transfer.error.internal": "Erreur interne : Données de transfert manquantes.",
+  "transfer.error.authRequired": "Authentification requise.",
+  "transfer.error.senderWalletMissing": "Adresse de portefeuille de l'expéditeur non trouvée.",
+  "transfer.error.invalidPassword": "Mot de passe invalide ou échec du déchiffrement.",
+  "transfer.error.incorrectPassword": "Mot de passe incorrect. Veuillez réessayer.",
+  "transfer.error.invalidRecipientAddress": "Format d'adresse de portefeuille du destinataire invalide.",
+  "transfer.error.sendSignature": "Échec de l'envoi de la transaction ou de l'obtention de la signature.",
+  "transfer.error.unknown": "Une erreur inconnue s'est produite.",
+  "transfer.error.recipientMissing": "Erreur : Données du destinataire manquantes.",
 } as const;

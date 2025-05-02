@@ -42,6 +42,8 @@ export default {
   "wallet.balanceLabel": "Saldo",
   "wallet.currency": "USD",
   "wallet.crypto": "USDC",
+  "wallet.error": "Error cargando el saldo",
+  "wallet.myWallet": "Mi Billetera",
 
   // Add Contact component
   "contacts.add": "Añadir Contacto",
@@ -125,4 +127,56 @@ export default {
 
   // Sign Out Button component
   "signOut.button": "Cerrar sesión",
+
+  // Transfer Modal (index.tsx, steps)
+  "transfer.title.confirm": "Confirmar Transferencia",
+  "transfer.title.confirmPassword": "Confirmar Contraseña",
+  "transfer.title.processing": "Procesando Transacción",
+  "transfer.title.success": "¡Transferencia Exitosa!",
+  "transfer.title.failed": "Transferencia Fallida",
+  "transfer.title.default": "Transferir Fondos",
+
+  "transfer.description.confirm": "Por favor revisa los detalles antes de confirmar.",
+  "transfer.description.confirmPassword": "Ingresa tu contraseña para autorizar esta transacción.",
+  "transfer.description.processing": "Tu transacción se está procesando de forma segura.",
+  "transfer.description.success": "Los fondos han sido enviados exitosamente.",
+  "transfer.description.failed": "Ocurrió un error durante la transferencia. Por favor inténtalo de nuevo.",
+  "transfer.description.default": "Ingresa destinatario y monto.",
+
+  "transfer.button.trigger": "Transferir",
+  "transfer.button.retry": "Intentar de Nuevo",
+  "transfer.button.close": "Cerrar",
+  "transfer.button.done": "Hecho",
+  "transfer.button.confirmTransfer": "Confirmar Transferencia",
+
+  "transfer.label.externalAddress": "Dirección Externa",
+  "transfer.label.amountToSend": "Monto a Enviar",
+
+  "transfer.status.processing": "Procesando Transacción...",
+  "transfer.status.processingDescription": "Por favor espera mientras enviamos tus fondos de forma segura.",
+
+  "transfer.success.title": "Transferencia Exitosa",
+  "transfer.success.description": "Enviaste {amount} a {name}",
+  "transfer.success.txLabel": "Tx:",
+  "transfer.success.copied": "¡Copiado!",
+  "transfer.success.copyHash": "Copiar Hash",
+  "transfer.success.viewOnSolscan": "Ver en Solscan",
+  "transfer.success.addContactButton": "Añadir {name} a Contactos",
+  "transfer.success.addedToContacts": "✓ Añadido a contactos",
+  "transfer.success.aria.copied": "Hash de transacción copiado",
+  "transfer.success.aria.copyHash": "Copiar hash de transacción",
+  "transfer.success.aria.viewOnSolscan": "Ver transacción en Solscan",
+
+  // Error messages
+  "transfer.error.generic": "Ocurrió un error durante la transferencia.",
+  "transfer.error.findUser": "Fallo al encontrar usuario. Por favor revisa los detalles e inténtalo de nuevo.",
+  "transfer.error.internal": "Error interno: Faltan datos de transferencia.",
+  "transfer.error.authRequired": "Autenticación requerida.",
+  "transfer.error.senderWalletMissing": "Dirección de billetera del remitente no encontrada.",
+  "transfer.error.invalidPassword": "Contraseña inválida o fallo en la desencriptación.",
+  "transfer.error.incorrectPassword": "Contraseña incorrecta. Por favor inténtalo de nuevo.",
+  "transfer.error.invalidRecipientAddress": "Formato de dirección de billetera del destinatario inválido.",
+  "transfer.error.sendSignature": "La transacción falló al enviar u obtener firma.",
+  "transfer.error.unknown": "Ocurrió un error desconocido.",
+  "transfer.error.recipientMissing": "Error: Faltan datos del destinatario.",
 } as const;

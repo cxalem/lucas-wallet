@@ -3,99 +3,88 @@
 import { transferFormSchema } from "@/utils/schemas";
 import { Button } from "../ui/button";
 import { z } from "zod";
-import { TransferStateEnum } from "@/types";
-import { Separator } from "@radix-ui/react-separator";
 import { useI18n } from "@/locales/client";
-import { Dispatch, SetStateAction } from "react";
 import { PublicKey } from "@solana/web3.js";
-type TransferModalSecondStepProps = {
+import { formatUsdcBalance } from "@/lib/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { User } from "lucide-react";
+
+interface TransferModalSecondStepProps {
   transferData: z.infer<typeof transferFormSchema>;
   recipient: {
     wallet_address: PublicKey;
-    user_name: string;
     first_name: string;
+    user_name: string;
     last_name: string;
     email: string;
+    avatar_url?: string;
   } | null;
-  setTransferState: Dispatch<
-    SetStateAction<{
-      state: TransferStateEnum;
-      data: z.infer<typeof transferFormSchema> | null;
-      recipient: {
-        wallet_address: PublicKey;
-        first_name: string;
-        user_name: string;
-        last_name: string;
-        email: string;
-      } | null;
-      transactionHash: string | null;
-    }>
-  >;
-};
+  onConfirm: () => void;
+  onBack: () => void;
+}
 
 export const TransferModalSecondStep = ({
   transferData,
   recipient,
-  setTransferState,
+  onConfirm,
+  onBack,
 }: TransferModalSecondStepProps) => {
   const t = useI18n();
 
-  const nameAndLastName =
-    recipient?.first_name && recipient?.last_name
-      ? `${recipient.first_name} ${recipient.last_name}`
-      : null;
+  if (!recipient) {
+    return <div>{t("transfer.error.recipientMissing")}</div>;
+  }
 
-  const nameOrUsername = nameAndLastName || `@${recipient?.user_name}`;
+  const recipientName =
+    recipient.first_name ||
+    recipient.user_name ||
+    t("transfer.label.externalAddress");
+  const recipientIdentifier = recipient.wallet_address.toBase58();
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="text-zinc-50 gap-1 flex flex-col mt-4">
-        <span className="text-zinc-400">{t("transfer.to.label")}</span>
-        <div className="flex flex-col gap-1 bg-neutral-800 px-4 py-2 rounded-lg">
-          <span className="font-semibold text-2xl max-w-sm truncate">
-            {nameOrUsername}
-          </span>{" "}
-          <span className="text-zinc-400">{recipient?.email}</span>
+    <div className="pt-6 space-y-6">
+      <div className="flex items-center space-x-4 bg-zinc-800 p-4 rounded-lg border border-zinc-700">
+        <Avatar className="h-12 w-12">
+          <AvatarImage src={recipient.avatar_url} alt={recipientName} />
+          <AvatarFallback className="bg-zinc-700">
+            {recipientName
+              ?.split(" ")
+              .map((n) => n[0])
+              .join("")
+              .toUpperCase() || <User size={20} />}
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex-1 min-w-0">
+          <p className="text-lg font-medium text-white truncate">
+            {recipientName}
+          </p>
+          <p className="text-sm text-zinc-400 truncate">
+            {recipientIdentifier}
+          </p>
         </div>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <span className="text-zinc-400">{t("transfer.amount.label2")}</span>
-        <div className="flex gap-2 items-end justify-between bg-neutral-800 px-4 py-2 rounded-lg w-full">
-          <span className="font-bold text-3xl">${transferData.amount}</span>
-          <span className="text-zinc-400">
-            {transferData.amount} {t("wallet.crypto")}
-          </span>
-        </div>
+      <div className="text-center space-y-2">
+        <p className="text-sm text-zinc-400">
+          {t("transfer.label.amountToSend")}
+        </p>
+        <p className="text-4xl font-bold text-white">
+          {formatUsdcBalance(transferData.amount)}
+        </p>
+        <p className="text-sm text-zinc-500">
+          {t("wallet.crypto") + " " + transferData.amount}
+        </p>
       </div>
 
-      <div className="px-2 opacity-40">
-        <Separator className="my-4 border border-neutral-100" />
-      </div>
-
-      <div className="flex gap-4 w-full">
-        <Button
-          variant="secondary"
-          className="w-full"
-          onClick={() =>
-            setTransferState((prev) => ({
-              ...prev,
-              state: TransferStateEnum.Idle,
-            }))
-          }
-        >
+      <div className="flex justify-between gap-4 pt-4">
+        <Button variant="outline" onClick={onBack} className="w-full">
           {t("transfer.button.back")}
         </Button>
         <Button
-          className="w-full"
-          onClick={() =>
-            setTransferState((prev) => ({
-              ...prev,
-              state: TransferStateEnum.Pending,
-            }))
-          }
+          onClick={onConfirm}
+          className="w-full bg-violet-600 hover:bg-violet-700 text-blue-50"
         >
-          {t("transfer.button.transfer")}
+          {t("transfer.button.confirmTransfer")}
         </Button>
       </div>
     </div>

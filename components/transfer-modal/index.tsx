@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -13,79 +13,48 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 
-import { createClient } from "@/utils/supabase/client";
-import { INPUT_ERROR_TYPES } from "@/utils/constants";
 import { passwordFormSchema, transferFormSchema } from "@/utils/schemas";
 import { Contact } from "@/types";
 import { TransferModalFirstStep } from "./first-transfer-step";
 import { TransferModalSecondStep } from "./second-transfer-step";
 import { TransferModalThirdStep } from "./third-transfer-step";
-import { TransferStateEnum } from "@/types";
-import {
-  addTransactionToDb,
-  decryptPrivateKey,
-  getUsdcBalance,
-  sendSolanaTransaction,
-} from "./actions";
-import { ContactCard } from "../contacts/contact-card";
-import { addContact, getContact } from "../contacts/actions";
+import { SendingTransactionStep } from "./sending-transaction-step";
 import { TransferSuccess } from "./success-step";
+import { ContactCard } from "../contacts/contact-card";
 
-import { Keypair, PublicKey } from "@solana/web3.js";
-import { isValidSolanaAddress } from "@/lib/utils";
-import { useQueryClient } from "@tanstack/react-query";
+import { useI18n } from "@/locales/client";
+
+import {
+  useTransferState,
+  TransferStates,
+  TransferState,
+} from "./useTransferState";
+import { useTransferHandlers } from "./useTransferHandlers";
 
 type TransferModalProps = {
   type?: "transfer" | "contact";
   contact?: Contact;
+  triggerButton?: React.ReactNode;
 };
 
 export default function TransferModal({
   type = "transfer",
   contact,
+  triggerButton,
 }: TransferModalProps) {
-  const supabase = createClient();
-
-  const [transfer, setTransfer] = useState({
-    state: TransferStateEnum.Idle,
-    data: null as z.infer<typeof transferFormSchema> | null,
-    recipient: null as {
-      wallet_address: PublicKey;
-      first_name: string;
-      user_name: string;
-      last_name: string;
-      email: string;
-    } | null,
-    transactionHash: null as string | null,
-  });
+  const t = useI18n();
+  const { state, dispatch } = useTransferState();
 
   const [userBalance, setUserBalance] = useState<string | null>(null);
-
-  /* ********** I'll need this later, that's why I'm keeping it here ********** */
-  // const [transactionDetails, setTransactionDetails] = useState<z.infer<
-  //   typeof transactionReceiptSchema
-  // > | null>(null);
-
-  const [isSending, setIsSending] = useState(false);
-
-  // Error states
-  const [inputError, setInputError] = useState<
-    (typeof INPUT_ERROR_TYPES)[keyof typeof INPUT_ERROR_TYPES] | null
-  >(null);
-
-  // If user clicked on a known contact
+  const [inputError, setInputError] = useState<string | null>(null);
   const [userContact, setUserContact] = useState<Contact | null>(null);
 
-  const [isContactAdded, setIsContactAdded] = useState<boolean | undefined>(
-    undefined
-  );
-
-  // React Hook Form
   const transferForm = useForm<z.infer<typeof transferFormSchema>>({
     resolver: zodResolver(transferFormSchema),
     defaultValues: {
-      email: "",
+      email: contact?.email || "",
       amount: 0,
     },
   });
@@ -96,371 +65,164 @@ export default function TransferModal({
     },
   });
 
-  const queryClient = useQueryClient();
+  const {
+    handleTransferFormSubmit,
+    handlePasswordFormSubmit,
+    handleAddContact,
+    handleClose,
+    handleModalOpen,
+    isSending,
+    isContactAdded,
+  } = useTransferHandlers({
+    state,
+    dispatch,
+    transferForm,
+    passwordForm,
+    setInputError,
+    setUserBalance,
+    setUserContact,
+  });
 
-  async function handleTransferFormSubmit(
-    values: z.infer<typeof transferFormSchema>
-  ) {
-    try {
-      if (isValidSolanaAddress(values.email)) {
-        setTransfer((prev) => ({
-          ...prev,
-          state: TransferStateEnum.Validating,
-          data: values,
-          recipient: {
-            wallet_address: values.email as unknown as PublicKey,
-            email: values.email,
-            first_name: "",
-            last_name: "",
-            user_name: values.email,
-          },
-          transactionHash: null,
-        }));
-        return;
-      }
-      const loggedUser = await supabase.auth.getUser();
-
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("email", values.email);
-
-      if (error) {
-        console.error("Error getting user", error);
-        setInputError(INPUT_ERROR_TYPES.user_not_found);
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        console.error("No users found with that email.");
-        setInputError(INPUT_ERROR_TYPES.user_not_found);
-        return;
-      }
-
-      if (loggedUser?.data.user?.email === values.email) {
-        console.error("You can't transfer funds to your own account.");
-        setInputError(INPUT_ERROR_TYPES.same_account);
-        return;
-      }
-
-      setTransfer((prev) => ({
-        ...prev,
-        state: TransferStateEnum.Validating,
-        data: values,
-        recipient: data[0],
-        transactionHash: null,
-      }));
-    } catch (err) {
-      console.error("Unexpected error searching user:", err);
-      setTransfer((prev) => ({
-        ...prev,
-        state: TransferStateEnum.Error,
-        data: null,
-        recipient: null,
-        transactionHash: null,
-      }));
-    }
-  }
-
-  async function handlePasswordFormSubmit(
-    values: z.infer<typeof passwordFormSchema>
-  ) {
-    if (!transfer.data || !transfer.recipient) {
-      console.error("Incomplete data for transfer");
-      return;
-    }
-    try {
-      setTransfer((prev) => ({
-        ...prev,
-        state: TransferStateEnum.Pending,
-      }));
-      setIsSending(true);
-
-      const loggedUser = await supabase.auth.getUser();
-      if (!loggedUser?.data.user) {
-        console.error("No authenticated user");
-        return;
-      }
-
-      const userMetadata = loggedUser.data.user.user_metadata as {
-        salt: string;
-        iv: string;
-        ciphertext: string;
-      };
-
-      const privateKey = await decryptPrivateKey(values.password, userMetadata);
-
-      const privateKeyUint8Array = Uint8Array.from(
-        Buffer.from(privateKey, "hex")
-      );
-
-      const senderKeypair = Keypair.fromSecretKey(privateKeyUint8Array);
-
-      const recipientPublicKey = new PublicKey(
-        transfer.recipient.wallet_address
-      );
-
-      const signature = await sendSolanaTransaction(
-        privateKeyUint8Array,
-        transfer.recipient.wallet_address,
-        transfer.data.amount
-      );
-
-      const txDetails = {
-        from: senderKeypair.publicKey.toBase58(),
-        to: recipientPublicKey.toBase58(),
-        amount: transfer.data.amount,
-        signature: signature,
-      };
-
-      if (!signature) {
-        console.error("❌ Transaction failed");
-        setTransfer((prev) => ({
-          ...prev,
-          state: TransferStateEnum.Error,
-        }));
-        return;
-      }
-
-      setTransfer((prev) => ({
-        ...prev,
-        transactionHash: signature,
-      }));
-
-      const createdAt = new Date().toISOString();
-
-      console.log("txDetails", txDetails);
-
-      await addTransactionToDb(
-        txDetails,
-        {
-          wallet_address: txDetails.from,
-          email: loggedUser.data.user.email!,
-        },
-        {
-          wallet_address: txDetails.to,
-          email: transfer.recipient.email,
-        },
-        createdAt
-      );
-
-      await isContact();
-
-      setIsSending(false);
-      setTransfer((prev) => ({
-        ...prev,
-        state: TransferStateEnum.Success,
-      }));
-    } catch (err) {
-      console.error("Error in transfer:", err);
-      setTransfer((prev) => ({
-        ...prev,
-        state: TransferStateEnum.Error,
-      }));
-    }
-  }
-
-  function getDialogTitle(state: TransferStateEnum) {
-    switch (state) {
-      case TransferStateEnum.Validating:
-        return "Transferring";
-      case TransferStateEnum.Pending:
-        return "Confirm password";
-      case TransferStateEnum.Success:
-        return "Transfer successful!";
-      case TransferStateEnum.Error:
-        return "Error";
+  const progressValue = useMemo(() => {
+    switch (state.state) {
+      case TransferStates.Idle:
+        return 0;
+      case TransferStates.Validating:
+        return 25;
+      case TransferStates.Pending:
+        return 50;
+      case TransferStates.Sending:
+        return 75;
+      case TransferStates.Success:
+      case TransferStates.Error:
+        return 100;
       default:
-        return "Transfer";
+        return 0;
     }
-  }
+  }, [state.state]);
 
-  function getDialogDescription(state: TransferStateEnum) {
-    switch (state) {
-      case TransferStateEnum.Validating:
-        return "Please check the information and confirm the transfer";
-      case TransferStateEnum.Pending:
-        return "To transfer funds, please confirm your password";
-      case TransferStateEnum.Success:
-        return "Your transaction has been sent successfully";
-      case TransferStateEnum.Error:
-        return "An error occurred";
+  function getDialogTitle(currentState: TransferState) {
+    switch (currentState) {
+      case TransferStates.Validating:
+        return t("transfer.title.confirm");
+      case TransferStates.Pending:
+        return t("transfer.title.confirmPassword");
+      case TransferStates.Sending:
+        return t("transfer.title.processing");
+      case TransferStates.Success:
+        return t("transfer.title.success");
+      case TransferStates.Error:
+        return t("transfer.title.failed");
       default:
-        return "Enter the information to transfer funds";
+        return t("transfer.title.default");
     }
   }
 
-  const handleAddContact = async () => {
-    const loggedUser = await supabase.auth.getUser();
-
-    if (!loggedUser?.data.user) {
-      console.error("There is no logged user");
-      return;
+  function getDialogDescription(currentState: TransferState) {
+    switch (currentState) {
+      case TransferStates.Validating:
+        return t("transfer.description.confirm");
+      case TransferStates.Pending:
+        return t("transfer.description.confirmPassword");
+      case TransferStates.Sending:
+        return t("transfer.description.processing");
+      case TransferStates.Success:
+        return t("transfer.description.success");
+      case TransferStates.Error:
+        return t("transfer.description.failed");
+      default:
+        return t("transfer.description.default");
     }
-
-    if (!userContact) {
-      console.error("There is no selected contact");
-      return;
-    }
-
-    const res = await addContact(userContact, loggedUser.data.user);
-    setIsContactAdded(true);
-
-    if (res && res.error) {
-      console.error("Error adding contact:", res.error);
-    }
-  };
-
-  const isContact = async () => {
-    const loggedUser = await supabase.auth.getUser();
-
-    if (!loggedUser?.data.user) {
-      console.error("There is no logged user");
-      return;
-    }
-
-    if (!userContact) {
-      console.error("There is no selected contact");
-      return;
-    }
-
-    const contacts = await getContact(loggedUser.data.user.id);
-
-    if (!contacts) {
-      console.error("There is no contact");
-      setIsContactAdded(false);
-      return;
-    }
-
-    const isContact = contacts?.some(
-      (c) => c.wallet_address === userContact.wallet_address
-    );
-    setIsContactAdded(isContact);
-    return isContact;
-  };
-
-  const handleClose = async () => {
-    const loggedUser = await supabase.auth.getUser();
-
-    if (!loggedUser?.data.user) {
-      console.error("There is no logged user");
-      return;
-    }
-
-    queryClient.invalidateQueries({
-      queryKey: [
-        "usdcBalance",
-        {
-          walletAddress: loggedUser.data.user.user_metadata.wallet_address,
-        },
-      ],
-    });
-
-    queryClient.invalidateQueries({
-      queryKey: [
-        "contacts",
-        {
-          userId: loggedUser.data.user.id,
-        },
-      ],
-    });
-
-    setTransfer((prev) => ({
-      ...prev,
-      state: TransferStateEnum.Idle,
-      transactionHash: null,
-      recipient: null,
-      data: null,
-    }));
-    setUserBalance(null);
-    setUserContact(null);
-    setInputError(null);
-    transferForm.reset();
-    passwordForm.reset();
-  };
+  }
 
   return (
-    <Dialog>
-      {type === "transfer" ? (
-        <DialogTrigger
-          onClick={async () => {
-            const balance = await getUsdcBalance();
-            if (balance) {
-              setUserBalance(balance);
-            }
-          }}
-          className="bg-gradient-to-r from-violet-800 via-violet-600 to-violet-800 px-10 py-2 rounded-full text-zinc-50 font-medium hover:shadow-xl w-full duration-150 shadow-md"
-        >
-          Transfer
+    <Dialog onOpenChange={(open) => !open && handleClose()}>
+      {triggerButton ? (
+        <DialogTrigger asChild>{triggerButton}</DialogTrigger>
+      ) : type === "transfer" ? (
+        <DialogTrigger asChild>
+          <Button
+            onClick={handleModalOpen}
+            className="bg-gradient-to-r from-violet-800 via-violet-600 to-violet-800 px-10 py-2 rounded-full text-zinc-50 font-medium hover:shadow-xl w-full duration-150 shadow-md"
+          >
+            {t("transfer.button.trigger")}
+          </Button>
         </DialogTrigger>
       ) : (
         type === "contact" &&
         contact && (
-          <ContactCard
-            transferForm={transferForm}
-            setUserBalance={setUserBalance}
-            setUserContact={
-              setUserContact as unknown as (contact: Contact) => void
-            }
-            contact={contact as unknown as Contact}
-          />
+          <DialogTrigger asChild>
+            <ContactCard
+              contact={contact as Contact}
+              setUserContact={setUserContact}
+              setUserBalance={setUserBalance}
+              transferForm={transferForm}
+            />
+          </DialogTrigger>
         )
       )}
 
-      <DialogContent className="bg-neutral-900">
+      <DialogContent className="bg-neutral-900 border-neutral-700">
+        {state.state !== TransferStates.Idle &&
+          state.state !== TransferStates.Success &&
+          state.state !== TransferStates.Error && (
+            <Progress value={progressValue} className="w-full h-2 mb-4" />
+          )}
         <div className="relative">
           <DialogHeader>
-            <DialogTitle>{getDialogTitle(transfer.state)}</DialogTitle>
-            <DialogDescription>
-              {getDialogDescription(transfer.state)}
+            <DialogTitle className="text-center text-2xl mb-1">
+              {getDialogTitle(state.state)}
+            </DialogTitle>
+            <DialogDescription className="text-center text-zinc-400">
+              {getDialogDescription(state.state)}
             </DialogDescription>
           </DialogHeader>
 
-          {transfer.state === TransferStateEnum.Validating && transfer.data ? (
-            /* ---------------------- Step 2: Validation ---------------------- */
+          {state.state === TransferStates.Validating &&
+          state.formData &&
+          state.recipient ? (
             <TransferModalSecondStep
-              transferData={transfer.data}
-              recipient={transfer.recipient}
-              setTransferState={setTransfer}
+              transferData={state.formData}
+              recipient={state.recipient}
+              onConfirm={() => dispatch({ type: "VALIDATION_SUCCESS" })}
+              onBack={() => dispatch({ type: "GO_BACK_TO_IDLE" })}
             />
-          ) : transfer.state === "pending" ? (
-            /* ----------------------- Step 3: Confirm password ---------------------- */
+          ) : state.state === TransferStates.Pending ? (
             <TransferModalThirdStep
               passwordForm={passwordForm}
               handlePasswordFormSubmit={handlePasswordFormSubmit}
-              setTransferState={setTransfer}
+              onBack={() => dispatch({ type: "GO_BACK_TO_VALIDATING" })}
               isSending={isSending}
+              errorMessage={state.errorMessage ?? undefined}
             />
-          ) : transfer.state === "success" ? (
-            /* ----------------------- Success ----------------------- */
+          ) : state.state === TransferStates.Sending ? (
+            <SendingTransactionStep />
+          ) : state.state === TransferStates.Success ? (
             <TransferSuccess
               onClick={handleClose}
-              transferData={transfer.data}
-              recipient={transfer.recipient}
-              transactionHash={transfer.transactionHash}
+              transferData={state.formData}
+              recipient={state.recipient}
+              transactionHash={state.transactionHash}
               isContactAdded={isContactAdded}
               handleAddContact={handleAddContact}
+              onAddContactSuccess={() => {}}
             />
-          ) : transfer.state === "error" ? (
-            /* ----------------------- Error ----------------------- */
-            <div className="flex flex-col items-center gap-4">
-              <p className="text-red-600">An error occurred in the transfer.</p>
+          ) : state.state === TransferStates.Error ? (
+            <div className="flex flex-col items-center gap-4 pt-4">
+              <p className="text-red-500 text-center">
+                {state.errorMessage || t("transfer.error.generic")}
+              </p>
               <Button
-                onClick={() =>
-                  setTransfer((prev) => ({
-                    ...prev,
-                    state: TransferStateEnum.Idle,
-                    data: null,
-                    recipient: null,
-                    transactionHash: null,
-                  }))
-                }
+                variant="outline"
+                onClick={() => dispatch({ type: "RETRY" })}
               >
-                Retry
+                {t("transfer.button.retry")}
+              </Button>
+              <Button variant="secondary" onClick={handleClose}>
+                {t("transfer.button.close")}
               </Button>
             </div>
           ) : (
-            /* ---------------------- Step 1: Transfer form ---------------------- */
             <TransferModalFirstStep
               transferForm={transferForm}
               setInputError={setInputError}

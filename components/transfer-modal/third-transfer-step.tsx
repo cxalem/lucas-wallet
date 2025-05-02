@@ -5,7 +5,6 @@ import { z } from "zod";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -13,40 +12,26 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { passwordFormSchema, transferFormSchema } from "@/utils/schemas";
-import { TransferStateEnum } from "@/types";
+import { passwordFormSchema } from "@/utils/schemas";
+import { Loader2 } from "lucide-react";
 import { useI18n } from "@/locales/client";
-import { SetStateAction } from "react";
-import { Dispatch } from "react";
-import { PublicKey } from "@solana/web3.js";
 
-type TransferModalThirdStepProps = {
+interface TransferModalThirdStepProps {
   passwordForm: UseFormReturn<z.infer<typeof passwordFormSchema>>;
   handlePasswordFormSubmit: (
     values: z.infer<typeof passwordFormSchema>
-  ) => void;
-  setTransferState: Dispatch<
-    SetStateAction<{
-      state: TransferStateEnum;
-      data: z.infer<typeof transferFormSchema> | null;
-      recipient: {
-        wallet_address: PublicKey;
-        first_name: string;
-        user_name: string;
-        last_name: string;
-        email: string;
-      } | null;
-      transactionHash: string | null;
-    }>
-  >;
+  ) => Promise<void>;
+  onBack: () => void;
   isSending: boolean;
-};
+  errorMessage?: string;
+}
 
 export const TransferModalThirdStep = ({
   passwordForm,
   handlePasswordFormSubmit,
-  setTransferState,
+  onBack,
   isSending,
+  errorMessage,
 }: TransferModalThirdStepProps) => {
   const t = useI18n();
 
@@ -54,43 +39,51 @@ export const TransferModalThirdStep = ({
     <Form {...passwordForm}>
       <form
         onSubmit={passwordForm.handleSubmit(handlePasswordFormSubmit)}
-        className="space-y-6 mt-4"
+        className="space-y-6 pt-4"
       >
         <FormField
           control={passwordForm.control}
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t("transfer.password.label")}</FormLabel>
+              <FormLabel className="text-zinc-300">
+                {t("transfer.password.label")}
+              </FormLabel>
               <FormControl>
                 <Input
                   type="password"
                   placeholder={t("transfer.password.placeholder")}
                   {...field}
+                  className="bg-zinc-800 border-zinc-700 text-white focus-visible:ring-violet-500"
                 />
               </FormControl>
-              <FormDescription>
-                {t("transfer.password.description")}
-              </FormDescription>
-              <FormMessage />
+              <FormMessage className="text-red-500" />
+              {errorMessage && (
+                <p className="text-sm font-medium text-red-500">
+                  {errorMessage}
+                </p>
+              )}
             </FormItem>
           )}
         />
-        <div className="flex gap-4 w-full">
+        <div className="flex justify-between gap-4 pt-2">
           <Button
-            variant="secondary"
+            type="button"
+            variant="outline"
+            onClick={onBack}
+            disabled={isSending}
             className="w-full"
-            onClick={() =>
-              setTransferState((prev) => ({
-                ...prev,
-                state: TransferStateEnum.Validating,
-              }))
-            }
           >
             {t("transfer.button.back")}
           </Button>
-
-          <Button type="submit" className="w-full" disabled={isSending}>
+          <Button
+            type="submit"
+            disabled={isSending}
+            className="w-full bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-blue-50"
+          >
+            {isSending ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : null}
             {isSending
               ? t("transfer.button.confirming")
               : t("transfer.button.confirm")}

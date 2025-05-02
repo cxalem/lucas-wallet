@@ -16,7 +16,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/client";
-import { INPUT_ERROR_TYPES } from "@/utils/constants";
 import { transferFormSchema } from "@/utils/schemas";
 import { Contact } from "@/types";
 import { XIcon } from "lucide-react";
@@ -31,11 +30,9 @@ type TransferModalFirstStepProps = {
   handleTransferFormSubmit: (
     values: z.infer<typeof transferFormSchema>
   ) => void;
-  inputError: (typeof INPUT_ERROR_TYPES)[keyof typeof INPUT_ERROR_TYPES] | null;
+  inputError: string | null;
   userBalance: string | null;
-  setInputError: (
-    error: (typeof INPUT_ERROR_TYPES)[keyof typeof INPUT_ERROR_TYPES] | null
-  ) => void;
+  setInputError: (error: string | null) => void;
 };
 
 /**
@@ -92,10 +89,7 @@ export const TransferModalFirstStep = ({
           return;
         } else {
           // Looks like a wallet address candidate but invalid.
-          setInputError({
-            type: "invalid-address",
-            message: t("transfer.invalidAddressError"),
-          });
+          setInputError(t("transfer.invalidAddressError"));
           setUserContact(null);
           setSearchResults([]);
           return;
@@ -161,7 +155,7 @@ export const TransferModalFirstStep = ({
           t("transfer.email.description")
         ) : (
           <span className="text-red-600">
-            {t("transfer.email.error", { message: inputError?.message })}
+            {inputError}
           </span>
         )}
       </FormDescription>
@@ -179,6 +173,7 @@ export const TransferModalFirstStep = ({
           transferForm.setValue("email", "");
           setUserContact(null);
           setQuery("");
+          setInputError(null);
         }}
         className="flex justify-between bg-neutral-800 w-full h-fit px-3 py-1 hover:bg-neutral-700"
       >
@@ -193,7 +188,7 @@ export const TransferModalFirstStep = ({
         <XIcon className="w-4 h-4 text-muted-foreground" />
       </Button>
       {inputError ? (
-        <span className="text-red-400 px-2">{inputError?.message}</span>
+        <span className="text-red-400 px-2">{inputError}</span>
       ) : (
         <span className="text-muted-foreground text-sm">
           {t("transfer.recipient.warning")}

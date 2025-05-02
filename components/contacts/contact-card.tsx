@@ -46,8 +46,8 @@ export const ContactCard = ({
       onClick={() => {
         transferForm.setValue("email", contact.email);
         getUsdcBalance().then((balance) => {
-          if (balance) {
-            setUserBalance(balance);
+          if (balance !== undefined && balance !== null) {
+            setUserBalance(String(balance));
           }
         });
         setUserContact({

@@ -6,13 +6,7 @@ import { formatEther } from "viem";
 import { z } from "zod";
 
 // ======== Blockchain Libraries ========
-import {
-  Connection,
-  PublicKey,
-  Keypair,
-  sendAndConfirmTransaction,
-  Transaction,
-} from "@solana/web3.js";
+import { Connection, PublicKey, Keypair, Transaction } from "@solana/web3.js";
 import {
   getAssociatedTokenAddress,
   createTransferInstruction,
@@ -27,6 +21,69 @@ import { client } from "@/wallet.config";
 import { solanaTransactionSchema } from "@/utils/schemas";
 import { USDC_MINT_ADDRESS } from "@/utils/constants";
 
+// ======== Constants ========
+const USDC_DECIMALS = 6;
+const MIN_SOL_BALANCE_LAMPORTS = 5000;
+const SOLANA_RPC_URL = process.env.NEXT_PUBLIC_GO_GETBLOCK_URL;
+const ALCHEMY_API_KEY = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;
+
+if (!SOLANA_RPC_URL) {
+  console.error("Missing SOLANA_RPC_URL environment variable");
+}
+if (!ALCHEMY_API_KEY) {
+  console.warn(
+    "Missing NEXT_PUBLIC_ALCHEMY_API_KEY environment variable, getUsdcBalance may fail."
+  );
+}
+
+// ======== Connection Helper ========
+let connectionInstance: Connection | null = null;
+
+/**
+ * Gets a singleton Solana Connection instance.
+ * @returns The Solana Connection instance.
+ */
+const getSolanaConnection = (): Connection => {
+  if (!SOLANA_RPC_URL) {
+    throw new Error("Solana RPC URL is not configured.");
+  }
+  if (!connectionInstance) {
+    connectionInstance = new Connection(SOLANA_RPC_URL, "confirmed");
+  }
+  return connectionInstance;
+};
+
+// ======== Custom Error Classes ========
+class InsufficientSolError extends Error {
+  constructor(
+    message = "Sender does not have enough SOL to pay for transaction fees."
+  ) {
+    super(message);
+    this.name = "InsufficientSolError";
+  }
+}
+
+class ZeroUsdcBalanceError extends Error {
+  constructor(message = "Sender has 0 USDC in their token account.") {
+    super(message);
+    this.name = "ZeroUsdcBalanceError";
+  }
+}
+
+class InvalidRecipientPublicKeyError extends Error {
+  constructor(message = "Invalid recipient address format.") {
+    super(message);
+    this.name = "InvalidRecipientPublicKeyError";
+  }
+}
+
+class TransactionFailedError extends Error {
+  constructor(message: string) {
+    super(`Transaction failed: ${message}`);
+    this.name = "TransactionFailedError";
+  }
+}
+
 // ======== Helper Functions ========
 
 /**
@@ -36,168 +93,198 @@ import { USDC_MINT_ADDRESS } from "@/utils/constants";
  * @param connection - The Solana connection instance.
  * @param senderTokenAccount - The sender's associated USDC token account.
  * @param from - The sender's Keypair.
+ * @throws {InsufficientSolError} If sender SOL balance is too low.
+ * @throws {ZeroUsdcBalanceError} If sender USDC balance is zero.
+ * @throws {Error} For otherSPL or connection errors.
  */
-const getSenderAccountInfo = async (
+const validateSenderAccountInfo = async (
   connection: Connection,
   senderTokenAccount: PublicKey,
-  from: Keypair
+  senderKeypair: Keypair
 ) => {
-  try {
-    const senderAccountInfo = await getAccount(connection, senderTokenAccount);
-    const senderSolBalance = await connection.getBalance(from.publicKey);
-    if (senderSolBalance < 5000) {
-      throw new Error(
-        "❌ Sender does not have enough SOL to pay for transaction fees."
-      );
-    }
-    if (senderAccountInfo.amount === BigInt(0)) {
-      throw new Error("❌ Sender has 0 USDC in their token account.");
-    }
-  } catch (e) {
-    console.log(e);
+  const senderAccountInfo = await getAccount(connection, senderTokenAccount);
+  const senderSolBalance = await connection.getBalance(senderKeypair.publicKey);
+
+  if (senderSolBalance < MIN_SOL_BALANCE_LAMPORTS) {
+    throw new InsufficientSolError(
+      `Sender SOL balance (${senderSolBalance}) is less than required minimum (${MIN_SOL_BALANCE_LAMPORTS}).`
+    );
+  }
+  if (senderAccountInfo.amount === BigInt(0)) {
+    throw new ZeroUsdcBalanceError();
   }
 };
+
+/**
+ * Gets the associated token account addresses for sender and receiver.
+ * @internal Internal helper function.
+ */
+async function _getAssociatedTokenAccountAddresses(
+  mint: PublicKey,
+  senderPublicKey: PublicKey,
+  recipientPublicKey: PublicKey
+): Promise<{ senderTokenAccount: PublicKey; receiverTokenAccount: PublicKey }> {
+  const senderTokenAccount = await getAssociatedTokenAddress(
+    mint,
+    senderPublicKey
+  );
+  const receiverTokenAccount = await getAssociatedTokenAddress(
+    mint,
+    recipientPublicKey
+  );
+  return { senderTokenAccount, receiverTokenAccount };
+}
+
+/**
+ * Checks if a token account exists and adds a create instruction if it doesn't.
+ * @internal Internal helper function.
+ */
+async function _addCreateTokenAccountInstructionIfNeeded(
+  transaction: Transaction,
+  connection: Connection,
+  payer: PublicKey,
+  owner: PublicKey,
+  mint: PublicKey,
+  associatedTokenAddress: PublicKey
+): Promise<void> {
+  try {
+    await getAccount(connection, associatedTokenAddress);
+    // Account already exists, do nothing
+  } catch (error: unknown) {
+    // Assuming error means account doesn't exist (common case)
+    // Consider more specific error checking (e.g., TokenAccountNotFoundError) if library provides it
+    console.log(
+      `Token account ${associatedTokenAddress.toBase58()} for owner ${owner.toBase58()} does not exist. Adding create instruction.`
+    );
+    console.log(error);
+    transaction.add(
+      createAssociatedTokenAccountInstruction(
+        payer, // Payer
+        associatedTokenAddress, // ATA address
+        owner, // Owner
+        mint // Mint
+      )
+    );
+  }
+}
+
+/**
+ * Adds the SPL Token transfer instruction for USDC.
+ * @internal Internal helper function.
+ */
+function _addUsdcTransferInstruction(
+  transaction: Transaction,
+  senderTokenAccount: PublicKey,
+  receiverTokenAccount: PublicKey,
+  senderPublicKey: PublicKey, // Authority
+  amountInUsdcUnits: number
+): void {
+  const amountInLamports = BigInt(
+    Math.round(amountInUsdcUnits * 10 ** USDC_DECIMALS)
+  );
+  if (amountInLamports <= 0) {
+    throw new Error("Transfer amount must be positive.");
+  }
+
+  transaction.add(
+    createTransferInstruction(
+      senderTokenAccount,
+      receiverTokenAccount,
+      senderPublicKey, // Authority
+      amountInLamports
+    )
+  );
+}
 
 // ======== Transaction Functions ========
 
 /**
- * Transfers USDC tokens on Solana using sendAndConfirmTransaction.
- *
- * @param from - The sender's Keypair.
- * @param to - The receiver's PublicKey.
- * @param amount - The amount of USDC tokens to transfer (in USDC units).
- * @returns The transaction signature.
- */
-export async function transferSolana(
-  from: Keypair,
-  to: PublicKey,
-  amount: number
-) {
-  const connection = new Connection(
-    process.env.NEXT_PUBLIC_GO_GETBLOCK_URL!,
-    "confirmed"
-  );
-
-  const usdcMint = new PublicKey(USDC_MINT_ADDRESS);
-  const senderTokenAccount = await getAssociatedTokenAddress(
-    usdcMint,
-    from.publicKey
-  );
-  const receiverTokenAccount = await getAssociatedTokenAddress(
-    usdcMint,
-    new PublicKey(to)
-  );
-
-  const transaction = new Transaction();
-
-  try {
-    await getAccount(connection, receiverTokenAccount);
-  } catch (e) {
-    console.log(
-      "🚀 Receiver does not have a USDC token account. Creating one...",
-      e
-    );
-    transaction.add(
-      createAssociatedTokenAccountInstruction(
-        from.publicKey,
-        receiverTokenAccount,
-        to,
-        usdcMint
-      )
-    );
-  }
-
-  transaction.add(
-    createTransferInstruction(
-      senderTokenAccount,
-      receiverTokenAccount,
-      from.publicKey,
-      amount * 1e6
-    )
-  );
-
-  if (!(from instanceof Keypair)) {
-    throw new Error("❌ 'from' must be a valid Keypair");
-  }
-
-  await getSenderAccountInfo(connection, senderTokenAccount, from);
-  const signature = await sendAndConfirmTransaction(connection, transaction, [
-    from,
-  ]);
-  console.log(`✅ USDC sent! Transaction Signature: ${signature}`);
-  return signature;
-}
-
-/**
  * Sends a USDC transaction on Solana by manually serializing the transaction
- * and posting it to the network.
+ * and posting it to the network via RPC.
  *
- * @param from - The sender's Keypair.
- * @param to - The receiver's PublicKey.
- * @param amount - The amount of USDC tokens to transfer (in USDC units).
- * @returns The transaction result from the network.
+ * @param fromSecretKeyBytes - The sender's secret key as Uint8Array.
+ * @param toAddress - The receiver's wallet address as a string.
+ * @param amountInUsdcUnits - The amount of USDC tokens to transfer (in USDC units).
+ * @returns The transaction signature string from the network.
+ * @throws {InvalidRecipientPublicKeyError} If toAddress is invalid.
+ * @throws {InsufficientSolError} If sender SOL balance is too low.
+ * @throws {ZeroUsdcBalanceError} If sender USDC balance is zero.
+ * @throws {TransactionFailedError} If the RPC call returns an error.
+ * @throws {Error} For other configuration or network issues.
  */
 export const sendSolanaTransaction = async (
-  from: Uint8Array<ArrayBuffer>,
-  to: PublicKey,
-  amount: number
-) => {
-  const connection = new Connection(
-    process.env.NEXT_PUBLIC_GO_GETBLOCK_URL!,
-    "confirmed"
-  );
+  fromSecretKeyBytes: Uint8Array,
+  toAddress: string,
+  amountInUsdcUnits: number
+): Promise<string> => {
+  const connection = getSolanaConnection();
+
+  let recipientPublicKey: PublicKey;
+  try {
+    recipientPublicKey = new PublicKey(toAddress);
+  } catch (e) {
+    console.error(
+      "Invalid recipient public key string passed to server action:",
+      toAddress,
+      e
+    );
+    throw new InvalidRecipientPublicKeyError();
+  }
 
   const transaction = new Transaction();
   const usdcMint = new PublicKey(USDC_MINT_ADDRESS);
-  const senderKeypair = Keypair.fromSecretKey(from);
+  const senderKeypair = Keypair.fromSecretKey(fromSecretKeyBytes);
 
-  const senderTokenAccount = await getAssociatedTokenAddress(
-    usdcMint,
-    senderKeypair.publicKey
-  );
-  const receiverTokenAccount = await getAssociatedTokenAddress(
-    usdcMint,
-    new PublicKey(to)
-  );
-
-  try {
-    await getAccount(connection, receiverTokenAccount);
-  } catch (e) {
-    console.log(
-      "🚀 Receiver does not have a USDC token account. Creating one...",
-      e
-    );
-    transaction.add(
-      createAssociatedTokenAccountInstruction(
-        senderKeypair.publicKey,
-        receiverTokenAccount,
-        to,
-        usdcMint
-      )
-    );
-  }
-
-  transaction.add(
-    createTransferInstruction(
-      senderTokenAccount,
-      receiverTokenAccount,
+  // Get ATAs using helper
+  const { senderTokenAccount, receiverTokenAccount } =
+    await _getAssociatedTokenAccountAddresses(
+      usdcMint,
       senderKeypair.publicKey,
-      amount * 1e6
-    )
+      recipientPublicKey
+    );
+
+  // Add create instruction for receiver if needed, using helper
+  await _addCreateTokenAccountInstructionIfNeeded(
+    transaction,
+    connection,
+    senderKeypair.publicKey, // Payer
+    recipientPublicKey, // Owner
+    usdcMint,
+    receiverTokenAccount
   );
 
+  // Add transfer instruction using helper
+  _addUsdcTransferInstruction(
+    transaction,
+    senderTokenAccount,
+    receiverTokenAccount,
+    senderKeypair.publicKey, // Authority
+    amountInUsdcUnits
+  );
+
+  // Validate sender balance *before* signing and sending
+  await validateSenderAccountInfo(
+    connection,
+    senderTokenAccount,
+    senderKeypair
+  );
+
+  // Get recent blockhash and set fee payer
   transaction.recentBlockhash = (
     await connection.getLatestBlockhash("finalized")
   ).blockhash;
   transaction.feePayer = senderKeypair.publicKey;
+
+  // Sign the transaction
   transaction.sign(senderKeypair);
 
+  // Serialize and send
   const serializedTransaction = transaction.serialize();
   const base64Transaction = base64.fromByteArray(serializedTransaction);
 
-  await getSenderAccountInfo(connection, senderTokenAccount, senderKeypair);
-
-  const response = await fetch(process.env.NEXT_PUBLIC_GO_GETBLOCK_URL!, {
+  console.log("Sending transaction...");
+  const response = await fetch(SOLANA_RPC_URL!, {
+    // Use centralized URL
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -208,6 +295,8 @@ export const sendSolanaTransaction = async (
         base64Transaction,
         {
           encoding: "base64",
+          skipPreflight: false,
+          preflightCommitment: "confirmed",
           maxRetries: 5,
         },
       ],
@@ -215,64 +304,120 @@ export const sendSolanaTransaction = async (
   });
 
   const result = await response.json();
-  return result.result;
+
+  if (result.error) {
+    console.error("Error sending transaction:", result.error);
+    throw new TransactionFailedError(result.error.message || "RPC Error");
+  }
+
+  if (!result.result || typeof result.result !== "string") {
+    console.error("Unexpected response from sendTransaction:", result);
+    throw new Error(
+      "Failed to send transaction: Invalid response from RPC node."
+    );
+  }
+
+  console.log(`Transaction sent via RPC. Signature: ${result.result}`);
+  return result.result; // Return the signature string
 };
 
 // ======== Balance Functions ========
 
 /**
- * Retrieves the user's wallet balance (in Ether) using Supabase authentication.
+ * Retrieves the user's native wallet balance (e.g., ETH) using Supabase auth and Viem client.
+ * Assumes `client` is configured for the native chain.
  *
- * @returns A formatted wallet balance (first 5 characters).
+ * @returns A promise resolving to the formatted wallet balance (first 5 characters) or undefined on error.
  */
-export const getUserBalance = async () => {
+export const getUserNativeBalance = async (): Promise<string | undefined> => {
   const supabase = await createClient();
-  const { data, error } = await supabase.auth.getUser();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
 
-  if (error) {
-    console.error("Error getting user", error);
-    return;
+  if (userError || !user) {
+    console.error("Error getting user or user not found:", userError);
+    return undefined;
   }
 
-  const { user_metadata } = data.user;
-  const balance = await client.getBalance({
-    address: user_metadata.wallet_address,
-  });
-  const formattedBalance = formatEther(balance);
-  return formattedBalance.slice(0, 5);
+  const walletAddress = user.user_metadata?.wallet_address;
+  if (!walletAddress) {
+    console.error("User metadata does not contain wallet_address.");
+    return undefined;
+  }
+
+  try {
+    // Assuming `client` is the viem client instance imported from @/wallet.config
+    const balance = await client.getBalance({
+      address: walletAddress as `0x${string}`, // Cast needed for viem
+    });
+    const formattedBalance = formatEther(balance);
+    return formattedBalance.slice(0, 5); // Keep the slicing for now
+  } catch (balanceError) {
+    console.error(
+      `Error fetching native balance for ${walletAddress}:`,
+      balanceError
+    );
+    return undefined;
+  }
 };
 
 /**
  * Retrieves the user's USDC token balance on Solana.
  *
- * @returns The USDC balance.
+ * @returns A promise resolving to the USDC balance (number) or 0 on error/not found.
  */
-export const getUsdcBalance = async () => {
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.getUser();
-
-  if (error) {
-    console.error("Error getting user", error);
-    return;
+export const getUsdcBalance = async (): Promise<number> => {
+  if (!ALCHEMY_API_KEY) {
+    console.error("Cannot fetch USDC balance: Alchemy API Key is missing.");
+    return 0;
   }
 
-  const { user_metadata } = data.user;
-  const connection = new Connection(
-    `https://solana-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}`,
-    "confirmed"
-  );
-  const publicKey = new PublicKey(user_metadata.wallet_address);
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
 
-  const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
-    publicKey,
-    { mint: new PublicKey(USDC_MINT_ADDRESS) }
-  );
+  if (userError || !user) {
+    console.error("Error getting user for USDC balance:", userError);
+    return 0;
+  }
 
-  const usdcBalance = tokenAccounts.value[0]
-    ? tokenAccounts.value[0].account.data.parsed.info.tokenAmount.uiAmount
-    : 0;
+  const walletAddress = user.user_metadata?.wallet_address;
+  if (!walletAddress) {
+    console.error(
+      "User metadata does not contain wallet_address for USDC balance."
+    );
+    return 0;
+  }
 
-  return usdcBalance || 0;
+  // Use a separate connection for Alchemy endpoint
+  const alchemyRpcUrl = `https://solana-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
+  const alchemyConnection = new Connection(alchemyRpcUrl, "confirmed");
+
+  try {
+    const publicKey = new PublicKey(walletAddress);
+    const usdcMint = new PublicKey(USDC_MINT_ADDRESS);
+
+    // Use getParsedTokenAccountsByOwner for easier balance extraction
+    const tokenAccounts = await alchemyConnection.getParsedTokenAccountsByOwner(
+      publicKey,
+      { mint: usdcMint }
+    );
+
+    // Check if the array has accounts and the first account has the necessary data
+    const accountInfo = tokenAccounts?.value?.[0]?.account?.data?.parsed?.info;
+    const usdcBalance = accountInfo?.tokenAmount?.uiAmount ?? 0;
+
+    console.log(`USDC Balance for ${walletAddress}: ${usdcBalance}`);
+    return usdcBalance;
+  } catch (e) {
+    // Catch potential PublicKey errors or connection issues
+    console.error(`Error fetching USDC balance for ${walletAddress}:`, e);
+    return 0; // Return 0 on error
+  }
 };
 
 // ======== Encryption Utilities ========

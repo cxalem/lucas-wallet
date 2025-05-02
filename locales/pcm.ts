@@ -43,6 +43,8 @@ export default {
   "wallet.balanceLabel": "Balance",
   "wallet.currency": "USD",
   "wallet.crypto": "USDC",
+  "wallet.error": "Error loading balance",
+  "wallet.myWallet": "My Wallet",
 
   // Add Contact component
   "contacts.add": "Add Contact",
@@ -124,4 +126,56 @@ export default {
 
   // Sign Out Button component
   "signOut.button": "Comot",
+
+  // Transfer Modal (index.tsx, steps)
+  "transfer.title.confirm": "Confirm Transfer",
+  "transfer.title.confirmPassword": "Confirm Password",
+  "transfer.title.processing": "Processing Transaction",
+  "transfer.title.success": "Transfer Successful!",
+  "transfer.title.failed": "Transfer Failed",
+  "transfer.title.default": "Transfer Funds",
+
+  "transfer.description.confirm": "Please review the details before confirming.",
+  "transfer.description.confirmPassword": "Enter your password to authorize this transaction.",
+  "transfer.description.processing": "Your transaction is being processed securely.",
+  "transfer.description.success": "The funds have been successfully sent.",
+  "transfer.description.failed": "An error occurred during the transfer. Please try again.",
+  "transfer.description.default": "Enter recipient and amount.",
+
+  "transfer.button.trigger": "Transfer",
+  "transfer.button.retry": "Try Again",
+  "transfer.button.close": "Close",
+  "transfer.button.done": "Done",
+  "transfer.button.confirmTransfer": "Confirm Transfer",
+
+  "transfer.label.externalAddress": "External Address",
+  "transfer.label.amountToSend": "Amount to Send",
+
+  "transfer.status.processing": "Processing Transaction...",
+  "transfer.status.processingDescription": "Please wait while we securely send your funds.",
+
+  "transfer.success.title": "Transfer Successful",
+  "transfer.success.description": "You sent {amount} to {name}",
+  "transfer.success.txLabel": "Tx:",
+  "transfer.success.copied": "Copied!",
+  "transfer.success.copyHash": "Copy Hash",
+  "transfer.success.viewOnSolscan": "View on Solscan",
+  "transfer.success.addContactButton": "Add {name} to Contacts",
+  "transfer.success.addedToContacts": "✓ Added to contacts",
+  "transfer.success.aria.copied": "Copied transaction hash",
+  "transfer.success.aria.copyHash": "Copy transaction hash",
+  "transfer.success.aria.viewOnSolscan": "View transaction on Solscan",
+
+  // Error messages
+  "transfer.error.generic": "An error occurred during the transfer.",
+  "transfer.error.findUser": "Failed to find user. Please check the details and try again.",
+  "transfer.error.internal": "Internal error: Missing transfer data.",
+  "transfer.error.authRequired": "Authentication required.",
+  "transfer.error.senderWalletMissing": "Sender wallet address not found.",
+  "transfer.error.invalidPassword": "Invalid password or decryption failed.",
+  "transfer.error.incorrectPassword": "Incorrect password. Please try again.",
+  "transfer.error.invalidRecipientAddress": "Invalid recipient address format.",
+  "transfer.error.sendSignature": "Transaction failed to send or obtain signature.",
+  "transfer.error.unknown": "An unknown error occurred.",
+  "transfer.error.recipientMissing": "Error: Recipient data missing.",
 } as const;
