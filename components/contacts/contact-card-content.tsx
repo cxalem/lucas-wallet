@@ -64,7 +64,16 @@ export const ContactCardContent = ({ loggedUser }: { loggedUser: User }) => {
       </div>
 
       {filteredContacts.length > 0 ? (
-        <div className="space-y-4 h-[236px] overflow-y-auto">
+        <div
+          className="space-y-4 h-[236px] overflow-y-scroll [&::-webkit-scrollbar]:w-2
+          [&::-webkit-scrollbar]:rounded-md
+        [&::-webkit-scrollbar-track]:bg-gray-100
+        [&::-webkit-scrollbar-thumb]:bg-gray-300
+          dark:[&::-webkit-scrollbar-thumb]:rounded-md
+        dark:[&::-webkit-scrollbar-track]:bg-neutral-700
+          dark:[&::-webkit-scrollbar-track]:rounded-md
+        dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500"
+        >
           {filteredContacts.map((contact) => (
             <TransferModal key={contact.id} type="contact" contact={contact} />
           ))}
