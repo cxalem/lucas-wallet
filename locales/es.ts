@@ -13,8 +13,10 @@ export default {
   "login.noAccount": "No tienes una cuenta?",
   "login.createAccount": "Crea una cuenta",
   "login.form.email-or-username.label": "Email o Nombre de usuario:",
-  "login.form.email-or-username.placeholder": "Ingresa tu email o nombre de usuario",
-  "login.form.error.email-or-username": "Ingresa un email o nombre de usuario válido",
+  "login.form.email-or-username.placeholder":
+    "Ingresa tu email o nombre de usuario",
+  "login.form.error.email-or-username":
+    "Ingresa un email o nombre de usuario válido",
   "login.form.error.required": "Este campo es requerido",
   "login.form.error.usernameNotFound": "Nombre de usuario no encontrado",
 
@@ -59,16 +61,24 @@ export default {
 
   // Contact Card component
   "contacts.card.altText": "{user_name}",
+  "contacts.card.send": "Enviar",
 
   // Contacts List component
   "contacts.list.title": "Transfiere fondos a tus contactos",
   "contacts.list.description":
     "Últimos contactos a los que has transferido fondos",
   "contacts.error.noUser": "Usuario no encontrado",
+  "contacts.table.header.name": "Nombre",
+  "contacts.table.header.address": "Dirección",
+  "contacts.table.header.actions": "Acciones",
+  "contacts.table.action.send": "Enviar",
+  "contacts.search.noResults":
+    "No se encontraron contactos que coincidan con tu búsqueda.",
 
   // Transfer Modal First Step component
   "transfer.email.label": "Email, Username o Wallet Address",
-  "transfer.email.placeholder": "Correo del destinatario, username o wallet address",
+  "transfer.email.placeholder":
+    "Correo del destinatario, username o wallet address",
   "transfer.email.description":
     "Añade la información de la cuenta a la que quieres transferir.",
   "transfer.invalidAddressError": "Dirección de wallet inválida",
@@ -136,11 +146,15 @@ export default {
   "transfer.title.failed": "Transferencia Fallida",
   "transfer.title.default": "Transferir Fondos",
 
-  "transfer.description.confirm": "Por favor revisa los detalles antes de confirmar.",
-  "transfer.description.confirmPassword": "Ingresa tu contraseña para autorizar esta transacción.",
-  "transfer.description.processing": "Tu transacción se está procesando de forma segura.",
+  "transfer.description.confirm":
+    "Por favor revisa los detalles antes de confirmar.",
+  "transfer.description.confirmPassword":
+    "Ingresa tu contraseña para autorizar esta transacción.",
+  "transfer.description.processing":
+    "Tu transacción se está procesando de forma segura.",
   "transfer.description.success": "Los fondos han sido enviados exitosamente.",
-  "transfer.description.failed": "Ocurrió un error durante la transferencia. Por favor inténtalo de nuevo.",
+  "transfer.description.failed":
+    "Ocurrió un error durante la transferencia. Por favor inténtalo de nuevo.",
   "transfer.description.default": "Ingresa destinatario y monto.",
 
   "transfer.button.trigger": "Transferir",
@@ -153,7 +167,8 @@ export default {
   "transfer.label.amountToSend": "Monto a Enviar",
 
   "transfer.status.processing": "Procesando Transacción...",
-  "transfer.status.processingDescription": "Por favor espera mientras enviamos tus fondos de forma segura.",
+  "transfer.status.processingDescription":
+    "Por favor espera mientras enviamos tus fondos de forma segura.",
 
   "transfer.success.title": "Transferencia Exitosa",
   "transfer.success.description": "Enviaste {amount} a {name}",
@@ -169,14 +184,20 @@ export default {
 
   // Error messages
   "transfer.error.generic": "Ocurrió un error durante la transferencia.",
-  "transfer.error.findUser": "Fallo al encontrar usuario. Por favor revisa los detalles e inténtalo de nuevo.",
+  "transfer.error.findUser":
+    "Fallo al encontrar usuario. Por favor revisa los detalles e inténtalo de nuevo.",
   "transfer.error.internal": "Error interno: Faltan datos de transferencia.",
   "transfer.error.authRequired": "Autenticación requerida.",
-  "transfer.error.senderWalletMissing": "Dirección de billetera del remitente no encontrada.",
-  "transfer.error.invalidPassword": "Contraseña inválida o fallo en la desencriptación.",
-  "transfer.error.incorrectPassword": "Contraseña incorrecta. Por favor inténtalo de nuevo.",
-  "transfer.error.invalidRecipientAddress": "Formato de dirección de billetera del destinatario inválido.",
-  "transfer.error.sendSignature": "La transacción falló al enviar u obtener firma.",
+  "transfer.error.senderWalletMissing":
+    "Dirección de billetera del remitente no encontrada.",
+  "transfer.error.invalidPassword":
+    "Contraseña inválida o fallo en la desencriptación.",
+  "transfer.error.incorrectPassword":
+    "Contraseña incorrecta. Por favor inténtalo de nuevo.",
+  "transfer.error.invalidRecipientAddress":
+    "Formato de dirección de billetera del destinatario inválido.",
+  "transfer.error.sendSignature":
+    "La transacción falló al enviar u obtener firma.",
   "transfer.error.unknown": "Ocurrió un error desconocido.",
   "transfer.error.recipientMissing": "Error: Faltan datos del destinatario.",
 } as const;
