@@ -8,6 +8,12 @@ const I18nMiddleware = createI18nMiddleware({
 });
 
 export async function middleware(request: NextRequest) {
+  // Skip internationalization for API routes
+  if (request.nextUrl.pathname.startsWith('/api/')) {
+    // Only handle the session update for API routes
+    return await updateSession(request);
+  }
+
   // First handle the session update
   const sessionResponse = await updateSession(request);
 

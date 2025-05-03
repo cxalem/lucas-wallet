@@ -1,0 +1,59 @@
+import { ChatMessage } from "./chat-message";
+import { ChatHeader } from "./chat-header";
+import { ChatInput } from "./chat-input";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import type { Message } from "@ai-sdk/react";
+import type { ChangeEvent, FormEvent, RefObject } from "react";
+import { EmptyChat } from "./empty-chat";
+import { LoadingIndicator } from "./loading-indicator";
+
+interface ChatContainerProps {
+  messages: Message[];
+  input: string;
+  handleInputChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  handleSubmit: (e: FormEvent<HTMLFormElement>) => void;
+  isLoading: boolean;
+  messagesEndRef: RefObject<HTMLDivElement>;
+}
+
+export function ChatContainer({
+  messages,
+  input,
+  handleInputChange,
+  handleSubmit,
+  isLoading,
+  messagesEndRef,
+}: ChatContainerProps) {
+  return (
+    <section className="flex flex-col items-center text-zinc-100 h-full">
+      <Card className="w-full max-w-3xl flex flex-col justify-between shadow-lg border-neutral-50/10 bg-neutral-800 h-full">
+        <ChatHeader />
+
+        <CardContent className="p-0 h-full">
+          <div className="h-full overflow-y-auto p-4 space-y-4">
+            {messages.length === 0 ? (
+              <EmptyChat />
+            ) : (
+              messages.map((message) => (
+                <ChatMessage key={message.id} message={message} />
+              ))
+            )}
+
+            {isLoading && <LoadingIndicator />}
+
+            <div ref={messagesEndRef} />
+          </div>
+        </CardContent>
+
+        <CardFooter>
+          <ChatInput
+            input={input}
+            handleInputChange={handleInputChange}
+            handleSubmit={handleSubmit}
+            isLoading={isLoading}
+          />
+        </CardFooter>
+      </Card>
+    </section>
+  );
+}
