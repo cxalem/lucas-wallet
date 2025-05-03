@@ -178,4 +178,9 @@ export default {
   "transfer.error.sendSignature": "Transaction failed to send or obtain signature.",
   "transfer.error.unknown": "An unknown error occurred.",
   "transfer.error.recipientMissing": "Error: Recipient data missing.",
+
+  // Navigation
+  "nav.wallet": "ওয়ালেট",
+  "nav.contacts": "পরিচিতি", 
+  "nav.transactions": "লেনদেন",
 } as const;

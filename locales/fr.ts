@@ -3,39 +3,44 @@ export default {
   "home.title": "Envoyer et Recevoir de l'Argent",
   "home.subtitle": "Quand vous voulez, où vous voulez",
   "home.balance.label": "Solde disponible",
-  "home.balance.amount": "23,877 €",
-  "home.balance.crypto": "23,867 USDT",
+  "home.balance.amount": "$23.877",
+  "home.balance.crypto": "USDT 23.867",
   "home.cta.button": "Commencer maintenant",
   "home.cta.description":
-    "Vous devez vous connecter à votre compte pour commencer à recevoir de l'argent.",
+    "Vous devez accéder à votre compte pour commencer à recevoir de l'argent.",
+
+  // Navigation
+  "nav.wallet": "Portefeuille",
+  "nav.contacts": "Contacts", 
+  "nav.transactions": "Transactions",
 
   // Login page content
-  "login.noAccount": "Vous n'avez pas de compte ?",
+  "login.noAccount": "Vous n'avez pas de compte?",
   "login.createAccount": "Créer un compte",
-  "login.form.email-or-username.label": "Email ou Nom d'utilisateur :",
+  "login.form.email-or-username.label": "Email ou Nom d'utilisateur:",
   "login.form.email-or-username.placeholder":
     "Entrez votre email ou nom d'utilisateur",
   "login.form.error.email-or-username":
-    "Entrez un email ou nom d'utilisateur valide",
+    "Veuillez entrer un email ou nom d'utilisateur valide",
   "login.form.error.required": "Ce champ est requis",
   "login.form.error.usernameNotFound": "Nom d'utilisateur non trouvé",
 
   // Create wallet page content
-  "createWallet.title": "Portefeuille Lucas",
+  "createWallet.title": "Lucas Wallet",
   "createWallet.description":
     "Créez votre compte pour commencer à recevoir et envoyer de l'argent.",
-  "createWallet.email.label": "Email :",
+  "createWallet.email.label": "Email:",
   "createWallet.email.placeholder": "Entrez votre email",
-  "createWallet.password.label": "Mot de passe :",
+  "createWallet.password.label": "Mot de passe:",
   "createWallet.password.placeholder": "Entrez votre mot de passe",
-  "createWallet.firstName.label": "Prénom :",
+  "createWallet.firstName.label": "Prénom:",
   "createWallet.firstName.placeholder": "Entrez votre prénom",
-  "createWallet.lastName.label": "Nom :",
+  "createWallet.lastName.label": "Nom:",
   "createWallet.lastName.placeholder": "Entrez votre nom",
   "createWallet.button": "Créer un compte",
-  "createWallet.haveAccount": "Vous avez déjà un compte ?",
-  "createWallet.login": "Connexion",
-  "createWallet.username.label": "Nom d'utilisateur :",
+  "createWallet.haveAccount": "Vous avez déjà un compte?",
+  "createWallet.login": "Se connecter",
+  "createWallet.username.label": "Nom d'utilisateur:",
   "createWallet.username.placeholder": "Entrez votre nom d'utilisateur",
 
   // Wallet page content

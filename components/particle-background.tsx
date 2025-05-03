@@ -11,6 +11,7 @@ interface Particle {
   opacity: number;
   shineTimer: number;
   isShining: boolean;
+  shineProgress: number; // Track transition progress
 }
 
 export default function ParticleBackground() {
@@ -48,6 +49,7 @@ export default function ParticleBackground() {
           opacity: Math.random() * 0.5 + 0.2,
           shineTimer: Math.floor(Math.random() * 200),
           isShining: false,
+          shineProgress: 0, // Start with no shine
         });
       }
     };
@@ -70,6 +72,11 @@ export default function ParticleBackground() {
 
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
+    };
+
+    // Ease in-out function
+    const easeInOutCubic = (x: number): number => {
+      return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
     };
 
     // Animation loop
@@ -125,40 +132,58 @@ export default function ParticleBackground() {
           particle.shineTimer = Math.floor(Math.random() * 200) + 50;
         }
 
+        // Update shine progress with smooth transition
+        if (particle.isShining && particle.shineProgress < 1) {
+          particle.shineProgress += 0.016; // Slower transition - approx 1s at 60fps
+          if (particle.shineProgress > 1) particle.shineProgress = 1;
+        } else if (!particle.isShining && particle.shineProgress > 0) {
+          particle.shineProgress -= 0.016; // Slower transition - approx 1s at 60fps
+          if (particle.shineProgress < 0) particle.shineProgress = 0;
+        }
+
+        // Apply ease-in-out curve to progress
+        const easedProgress = easeInOutCubic(particle.shineProgress);
+
         // White particles for dark mode
         const particleColor = "255, 255, 255";
 
         // Draw particle
         ctx.beginPath();
 
-        if (particle.isShining) {
-          // Shiny effect with glow
+        if (easedProgress > 0) {
+          // Partially or fully shining particle with glow
           const gradient = ctx.createRadialGradient(
             particle.x,
             particle.y,
             0,
             particle.x,
             particle.y,
-            particle.size * 3
+            particle.size * 3 * easedProgress
           );
           gradient.addColorStop(
             0,
-            `rgba(${particleColor}, ${particle.opacity + 0.3})`
+            `rgba(${particleColor}, ${particle.opacity + (0.3 * easedProgress)})`
           );
           gradient.addColorStop(
             0.5,
-            `rgba(${particleColor}, ${particle.opacity * 0.5})`
+            `rgba(${particleColor}, ${particle.opacity * 0.5 * easedProgress})`
           );
           gradient.addColorStop(1, `rgba(${particleColor}, 0)`);
 
           ctx.fillStyle = gradient;
-          ctx.arc(particle.x, particle.y, particle.size * 3, 0, Math.PI * 2);
+          ctx.arc(particle.x, particle.y, particle.size * 3 * easedProgress, 0, Math.PI * 2);
           ctx.fill();
 
-          // Bright center
+          // Bright center with varying brightness
           ctx.beginPath();
-          ctx.fillStyle = `rgba(${particleColor}, ${particle.opacity + 0.5})`;
-          ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${particleColor}, ${particle.opacity + (0.5 * easedProgress)})`;
+          ctx.arc(
+            particle.x, 
+            particle.y, 
+            particle.size * (1 + easedProgress * 0.5), 
+            0, 
+            Math.PI * 2
+          );
           ctx.fill();
         } else {
           // Normal particle

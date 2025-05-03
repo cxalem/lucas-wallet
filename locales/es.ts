@@ -9,6 +9,11 @@ export default {
   "home.cta.description":
     "Necesitas acceder a tu cuenta para empezar a recibir dinero.",
 
+  // Navigation
+  "nav.wallet": "Billetera",
+  "nav.contacts": "Contactos", 
+  "nav.transactions": "Transacciones",
+
   // Login page content
   "login.noAccount": "No tienes una cuenta?",
   "login.createAccount": "Crea una cuenta",

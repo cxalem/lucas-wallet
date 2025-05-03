@@ -1,13 +1,17 @@
 export default {
   // Homepage content
   "home.title": "Send and Collect Money",
-  "home.subtitle": "Anytime wey you want, anywhere wey you dey",
-  "home.balance.label": "Money wey dey available",
+  "home.subtitle": "Anytime you like, anywhere you dey",
+  "home.balance.label": "Money wey dey",
   "home.balance.amount": "$23.877",
   "home.balance.crypto": "USDT 23.867",
   "home.cta.button": "Start now",
-  "home.cta.description":
-    "You need to enter your account before you fit start to collect money.",
+  "home.cta.description": "You need to enter your account to start to collect money.",
+
+  // Navigation
+  "nav.wallet": "Wallet",
+  "nav.contacts": "Contacts", 
+  "nav.transactions": "Transactions",
 
   // Login page content
   "login.noAccount": "You no get account?",

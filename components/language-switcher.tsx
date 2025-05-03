@@ -30,12 +30,12 @@ export default function LanguageSwitcher() {
           <span className="sr-only">Switch language</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="bg-neutral-900 border-neutral-50/20">
         {Object.entries(languages).map(([code, name]) => (
           <DropdownMenuItem
             key={code}
             onClick={() => changeLocale(code as SupportedLocales)}
-            className={currentLocale === code ? "font-bold" : ""}
+            className={currentLocale === code ? "font-bold" : "hover:bg-neutral-800 cursor-pointer"}
           >
             {name}
           </DropdownMenuItem>

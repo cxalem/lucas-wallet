@@ -9,6 +9,11 @@ export default {
   "home.cta.description":
     "You need to enter your account to start receiving money.",
 
+  // Navigation
+  "nav.wallet": "Wallet",
+  "nav.contacts": "Contacts", 
+  "nav.transactions": "Transactions",
+
   // Login page content
   "login.noAccount": "Don't have an account?",
   "login.createAccount": "Create an account",
