@@ -13,7 +13,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/client";
 import { transferFormSchema } from "@/utils/schemas";
@@ -141,7 +140,7 @@ export const TransferModalFirstStep = ({
     <FormItem className="flex flex-col gap-2 space-y-0 justify-between mt-6">
       <FormLabel>{t("transfer.email.label")}</FormLabel>
       <FormControl>
-        <Input
+        <input
           autoComplete="off"
           onFocus={() => setIsSearching(true)}
           placeholder={t("transfer.email.placeholder")}
@@ -150,7 +149,7 @@ export const TransferModalFirstStep = ({
           className={
             inputError
               ? "border-red-600"
-              : "border-neutral-50/10 hover:border-0  hover:shadow-none  hover:ring-0  hover:outline-none focus:border-0 focus:shadow-none focus:ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0"
+              : "border border-neutral-50/20 rounded-lg py-2 px-3 bg-transparent text-sm placeholder:text-sm focus:shadow-none focus:ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0"
           }
         />
       </FormControl>
@@ -282,9 +281,9 @@ export const TransferModalFirstStep = ({
                 <FormControl>
                   <div className="flex text-3xl gap-1">
                     $
-                    <Input
+                    <input
                       placeholder="13.37"
-                      className="border-none h-fit p-0 !text-3xl bg-transparent [::-webkit-outer-spin-button]:appearance-none [::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield] hover:border-0  hover:shadow-none  hover:ring-0  hover:outline-none focus:border-0 focus:shadow-none focus:ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 appearance-none [&::-webkit-inner-spin-button]:appearance-none[&::-webkit-outer-spin-button]:appearance-none[-moz-appearance:textfield]"
+                      className="border-none w-full h-fit p-0 !text-3xl bg-transparent [::-webkit-outer-spin-button]:appearance-none [::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield] hover:border-0  hover:shadow-none  hover:ring-0  hover:outline-none focus:border-0 focus:shadow-none focus:ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 appearance-none [&::-webkit-inner-spin-button]:appearance-none[&::-webkit-outer-spin-button]:appearance-none[-moz-appearance:textfield]"
                       type="number"
                       step="any"
                       onChange={(e) => {
