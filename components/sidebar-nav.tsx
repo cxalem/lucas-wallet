@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { Wallet, Users, List } from "lucide-react";
 import { cn } from "@/lib/utils"; // Assuming you have a cn utility like in Shadcn/UI
 import { useI18n } from "@/locales/client";
-import { I18nProviderClient } from "@/locales/client";
 
 type NavItem = {
   nameKey: "nav.wallet" | "nav.contacts" | "nav.transactions";
