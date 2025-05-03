@@ -69,17 +69,17 @@ export const TransferModalThirdStep = ({
         <div className="flex justify-between gap-4 pt-2">
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             onClick={onBack}
             disabled={isSending}
-            className="w-full"
+            className="w-full cursor-pointer bg-neutral-50/5 hover:bg-neutral-50/10"
           >
             {t("transfer.button.back")}
           </Button>
           <Button
             type="submit"
             disabled={isSending}
-            className="w-full bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-blue-50"
+            className="w-full bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-blue-50 cursor-pointer"
           >
             {isSending ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

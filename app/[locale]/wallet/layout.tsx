@@ -8,6 +8,7 @@ import { getCurrentLocale } from "@/locales/server";
 import LanguageSwitcher from "@/components/language-switcher";
 import { unstable_ViewTransition as ViewTransition } from "react";
 import ParticleBackground from "@/components/particle-background";
+import { SidebarNav } from "@/components/sidebar-nav";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,25 +33,37 @@ export default async function RootLayout({
   const locale = await getCurrentLocale();
   return (
     <main
-      className={`${geistSans.variable} ${geistMono.variable} min-h-screen relative z-50 dark:bg-gradient-to-b from-neutral-950 to-neutral-900 dark:text-blue-50 bg-neutral-100 text-foreground antialiased text-zinc-800 max-w-[100vw] overflow-x-hidden p-2 md:p-0`}
+      className={`${geistSans.variable} ${geistMono.variable} relative z-50 dark:bg-gradient-to-b from-neutral-950 to-neutral-900 dark:text-blue-50 bg-neutral-100 text-foreground antialiased text-zinc-800 max-w-[100vw] overflow-x-hidden`}
     >
       <div className="fixed inset-0 w-full h-full bg-repeat bg-noise opacity-10 bg-[length:350px] z-[-20]"></div>
       <ViewTransition>
-        <nav className="flex justify-between items-center py-8 w-full max-w-6xl mx-auto z-50 px-2">
-          <Link href="/wallet" className="font-bold text-lg">
-            <h1 className="text-2xl/7 font-black uppercase text-center">
-              Lucas <br /> Wallet
-            </h1>
-          </Link>
-          <I18nProviderClient locale={locale}>
-            <div className="flex items-center gap-2">
-              <LanguageSwitcher />
-              <SignOutButton />
+        <div className="flex min-h-screen">
+          <aside className="w-16 md:w-60 flex flex-col justify-between p-3 md:p-6 bg-neutral-800 border-r border-neutral-50/10 transition-all duration-300">
+            <div>
+              <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+                <Link href="/wallet" className="font-bold text-lg">
+                  <h1 className="text-2xl/7 font-black uppercase">
+                    <span className="hidden md:inline">Lucas Wallet</span>
+                    <span className="md:hidden">LW</span>
+                  </h1>
+                </Link>
+                <I18nProviderClient locale={locale}>
+                  <LanguageSwitcher />
+                </I18nProviderClient>
+              </div>
+              <SidebarNav />
             </div>
-          </I18nProviderClient>
-        </nav>
-        <ParticleBackground />
-        <section className="max-w-6xl mx-auto px-2 h-full">{children}</section>
+            <div>
+              <I18nProviderClient locale={locale}>
+                <SignOutButton />
+              </I18nProviderClient>
+            </div>
+          </aside>
+          <div className="flex-1 relative p-8">
+            <ParticleBackground />
+            <section className="h-full max-w-6xl mx-auto">{children}</section>
+          </div>
+        </div>
       </ViewTransition>
     </main>
   );

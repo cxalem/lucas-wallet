@@ -6,8 +6,6 @@ import { DialogTrigger } from "@/components/ui/dialog";
 import { transferFormSchema } from "@/utils/schemas";
 
 import { getUsdcBalance } from "../transfer-modal/actions";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import Image from "next/image";
 import { UseFormReturn } from "react-hook-form";
 import { Contact } from "@/types";
 import { useI18n } from "@/locales/client";
@@ -26,20 +24,6 @@ export const ContactCard = ({
   setUserContact,
 }: ContactCardProps) => {
   const t = useI18n();
-
-  const nameOrUsername = (contact: Contact) => {
-    return contact.first_name
-      ? `${contact.first_name} ${contact.last_name}`
-      : `@${contact.user_name}`;
-  };
-
-  const getInitials = (contact: Contact) => {
-    if (contact.user_name) {
-      return `${contact.user_name[0]}${contact.user_name[1]}`.toUpperCase();
-    } else {
-      return `${contact.first_name[0]}${contact.last_name[0]}`.toUpperCase();
-    }
-  };
 
   return (
     <DialogTrigger
@@ -61,31 +45,11 @@ export const ContactCard = ({
           avatarUrl: contact.avatarUrl,
         } as unknown as Contact);
       }}
-      className="flex cursor-pointer items-center justify-between p-3 hover:bg-muted rounded-lg transition-colors w-full"
+      className="w-full"
     >
-      <div className="flex items-center gap-3">
-        <Avatar className="h-10 w-10">
-          {contact.avatarUrl ? (
-            <Image
-              src={contact.avatarUrl || "/placeholder.svg"}
-              alt={t("contacts.card.altText", {
-                user_name: nameOrUsername(contact),
-              })}
-              width={40}
-              height={40}
-            />
-          ) : (
-            <AvatarFallback>{getInitials(contact)}</AvatarFallback>
-          )}
-        </Avatar>
-        <div className="flex flex-col text-start">
-          <span className="text-sm text-muted-foreground">{contact.email}</span>
-          <span className="font-medium">{nameOrUsername(contact)}</span>
-        </div>
+      <div className="bg-neutral-50/10 cursor-pointer rounded-md py-2 px-4 w-fit mx-auto hover:bg-neutral-50/20">
+        {t("contacts.card.send")}
       </div>
-      {contact?.phone_number && (
-        <span className="text-muted-foreground">{contact.phone_number}</span>
-      )}
     </DialogTrigger>
   );
 };

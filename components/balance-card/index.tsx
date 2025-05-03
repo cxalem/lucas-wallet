@@ -98,7 +98,7 @@ export const BalanceCard = ({
           <CardContent className="py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Avatar className="h-12 w-12 bg-zinc-800 border border-zinc-700">
+                <Avatar className="h-12 w-12 bg-zinc-800 border hidden md:block border-zinc-700">
                   {/* Use initials or fallback icon */}
                   <AvatarFallback>{initials}</AvatarFallback>
                 </Avatar>
@@ -127,7 +127,7 @@ export const BalanceCard = ({
               </div>
               <div className="text-right">
                 <p className="font-medium text-xl text-white">${usdValue}</p>
-                <p className="text-sm text-zinc-400">
+                <p className="text-sm hidden md:block text-zinc-400">
                   {formattedUsdcBalance} {t("wallet.crypto") || "USDC"}
                 </p>
               </div>

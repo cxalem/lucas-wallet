@@ -147,16 +147,18 @@ export const TransferModalFirstStep = ({
           placeholder={t("transfer.email.placeholder")}
           value={query}
           onChange={handleSearchInput}
-          className={inputError ? "border-red-600" : ""}
+          className={
+            inputError
+              ? "border-red-600"
+              : "border-neutral-50/10 hover:border-0  hover:shadow-none  hover:ring-0  hover:outline-none focus:border-0 focus:shadow-none focus:ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0"
+          }
         />
       </FormControl>
       <FormDescription>
         {!inputError ? (
           t("transfer.email.description")
         ) : (
-          <span className="text-red-600">
-            {inputError}
-          </span>
+          <span className="text-red-600">{inputError}</span>
         )}
       </FormDescription>
       <FormMessage />
@@ -175,7 +177,7 @@ export const TransferModalFirstStep = ({
           setQuery("");
           setInputError(null);
         }}
-        className="flex justify-between bg-neutral-800 w-full h-fit px-3 py-1 hover:bg-neutral-700"
+        className="flex justify-between bg-neutral-800 w-full h-fit px-3 py-1 hover:bg-neutral-700 cursor-pointer"
       >
         <div className="flex flex-col text-start items-start">
           <span className="text-lg text-blue-50 font-bold max-w-sm truncate">
@@ -224,7 +226,7 @@ export const TransferModalFirstStep = ({
               setSearchResults([]);
               setIsSearching(false);
             }}
-            className="w-full text-left px-3 py-2 rounded-md hover:bg-neutral-700 duration-150"
+            className="w-full text-left px-3 py-2 rounded-md hover:bg-neutral-700 duration-150 cursor-pointer"
           >
             <div className="flex flex-col items-start gap-2">
               <span className="font-semibold">{displayName}</span>
@@ -282,7 +284,7 @@ export const TransferModalFirstStep = ({
                     $
                     <Input
                       placeholder="13.37"
-                      className="border-none h-fit p-0 !text-3xl focus:outline-none focus:ring-0 bg-transparent appearance-none [::-webkit-outer-spin-button]:appearance-none [::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+                      className="border-none h-fit p-0 !text-3xl bg-transparent [::-webkit-outer-spin-button]:appearance-none [::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield] hover:border-0  hover:shadow-none  hover:ring-0  hover:outline-none focus:border-0 focus:shadow-none focus:ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 appearance-none [&::-webkit-inner-spin-button]:appearance-none[&::-webkit-outer-spin-button]:appearance-none[-moz-appearance:textfield]"
                       type="number"
                       step="any"
                       onChange={(e) => {
@@ -297,7 +299,10 @@ export const TransferModalFirstStep = ({
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full">
+        <Button
+          type="submit"
+          className="w-full bg-violet-600 hover:bg-violet-700 rounded-full mt-4 cursor-pointer"
+        >
           {t("transfer.button.next")}
         </Button>
       </form>

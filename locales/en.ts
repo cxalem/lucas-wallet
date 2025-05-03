@@ -48,23 +48,28 @@ export default {
 
   // Add Contact component
   "contacts.add": "Add Contact",
-  "contacts.dialog.title": "Are you absolutely sure?",
-  "contacts.dialog.description":
-    "This action cannot be undone. This will permanently delete your account and remove your data from our servers.",
+  "contacts.dialog.title": "Add New Contact",
+  "contacts.dialog.description": "Enter the details of your new contact.",
 
   // Contact Card Content component
-  "contacts.search.placeholder": "Search for a specific contact",
-  "contacts.empty.title": "No contacts found",
-  "contacts.empty.description":
-    "You have no contacts or recent transactions to display",
+  "contacts.search.placeholder": "Search by name or address...",
+  "contacts.empty.title": "No contacts yet",
+  "contacts.empty.description": "Add contacts to easily send them funds.",
 
   // Contact Card component
   "contacts.card.altText": "{user_name}",
+  "contacts.card.send": "Send",
 
   // Contacts List component
-  "contacts.list.title": "Transfer funds to your contacts",
-  "contacts.list.description": "Last contacts you've transferred funds to",
-  "contacts.error.noUser": "No user found",
+  "contacts.list.title": "Contacts",
+  "contacts.list.description": "Manage your saved contacts.",
+  "contacts.error.noUser": "User not found.",
+  "contacts.error.loading": "Failed to load contacts. Please try again.",
+  "contacts.table.header.name": "Name",
+  "contacts.table.header.address": "Address",
+  "contacts.table.header.actions": "Actions",
+  "contacts.table.action.send": "Send",
+  "contacts.search.noResults": "No contacts match your search.",
 
   // Transfer Modal (index.tsx, steps)
   "transfer.title.confirm": "Confirm Transfer",

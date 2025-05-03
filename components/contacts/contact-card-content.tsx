@@ -1,91 +1,107 @@
 "use client";
 
-import { useState } from "react";
-import { Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { CardContent } from "@/components/ui/card";
-import { Contact } from "@/types";
+import type { Contact } from "@/types";
 import TransferModal from "../transfer-modal";
 import { useI18n } from "@/locales/client";
-import { useQuery } from "@tanstack/react-query";
-import { User } from "@supabase/supabase-js";
-import { getContacts } from "./actions";
-import { ContactCardLoading } from "./contact-card-loading";
-export const ContactCardContent = ({ loggedUser }: { loggedUser: User }) => {
-  const [searchQuery, setSearchQuery] = useState("");
+import { TableRow, TableCell } from "@/components/ui/table";
+import { useSearchParams } from "next/navigation";
+
+export const ContactCardContent = ({
+  initialContacts,
+}: {
+  initialContacts: Contact[] | null;
+}) => {
+  const searchParams = useSearchParams();
+  const searchQuery = searchParams.get("q") || "";
   const t = useI18n();
 
-  const {
-    data: contacts,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: [
-      "contacts",
-      {
-        userId: loggedUser.id,
-      },
-    ],
-    queryFn: () => getContacts(loggedUser),
-    refetchInterval: 60000,
-  });
-
-  if (isLoading) return <ContactCardLoading />;
-  if (error || !contacts) return <div>Error: {error?.message}</div>;
+  const contacts = initialContacts || [];
 
   const sortedContacts = [...contacts].sort((a, b) => {
-    if (!a.lastTransaction) return 1;
-    if (!b.lastTransaction) return -1;
-    return b.lastTransaction.date.getTime() - a.lastTransaction.date.getTime();
+    const nameA = a.first_name || a.user_name || "";
+    const nameB = b.first_name || b.user_name || "";
+    return nameA.localeCompare(nameB);
   });
 
   const nameOrUsername = (contact: Contact) => {
     return contact.first_name
-      ? `${contact.first_name} ${contact.last_name}`
-      : `${contact.user_name}`;
+      ? `${contact.first_name}${
+          contact.last_name ? " " + contact.last_name : ""
+        }`
+      : `@${contact.user_name}`;
   };
 
-  const filteredContacts = sortedContacts
-    .reverse()
-    .filter((contact) =>
-      nameOrUsername(contact).toLowerCase().includes(searchQuery.toLowerCase())
-    );
+  const getInitials = (contact: Contact) => {
+    if (contact.first_name) {
+      return (
+        contact.first_name.charAt(0) +
+        (contact.last_name
+          ? contact.last_name.charAt(0)
+          : contact.first_name.charAt(1))
+      );
+    } else if (contact.user_name) {
+      return contact.user_name.substring(0, 2).toUpperCase();
+    } else {
+      return "••";
+    }
+  };
+
+  const formatWalletAddress = (address?: string) => {
+    if (!address) return "";
+    if (address.length <= 10) return address;
+    return `${address.substring(0, 4)}...${address.substring(address.length - 4)}`;
+  };
+
+  const filteredContacts = sortedContacts.filter(
+    (contact) =>
+      nameOrUsername(contact)
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      contact.wallet_address?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
-    <CardContent className="pl-6 pr-6 pb-6 pt-2">
-      <div className="relative mb-6">
-        <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder={t("contacts.search.placeholder")}
-          className="pl-9 border border-neutral-600"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      </div>
-
+    <>
       {filteredContacts.length > 0 ? (
-        <div
-          className="space-y-4 h-[236px] overflow-y-scroll [&::-webkit-scrollbar]:w-2
-          [&::-webkit-scrollbar]:rounded-md
-        [&::-webkit-scrollbar-track]:bg-gray-100
-        [&::-webkit-scrollbar-thumb]:bg-gray-300
-          dark:[&::-webkit-scrollbar-thumb]:rounded-md
-        dark:[&::-webkit-scrollbar-track]:bg-neutral-700
-          dark:[&::-webkit-scrollbar-track]:rounded-md
-        dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500"
-        >
-          {filteredContacts.map((contact) => (
-            <TransferModal key={contact.id} type="contact" contact={contact} />
-          ))}
-        </div>
+        filteredContacts.map((contact) => (
+          <TableRow
+            key={contact.id}
+            className="border-b border-neutral-800 hover:bg-neutral-900/50 transition-colors"
+          >
+            <TableCell className="font-medium">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-neutral-800 flex items-center justify-center text-white text-xs font-medium">
+                  {contact.avatarUrl ? (
+                    <img
+                      src={contact.avatarUrl || "/placeholder.svg"}
+                      alt={nameOrUsername(contact)}
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                  ) : (
+                    getInitials(contact)
+                  )}
+                </div>
+                <span className="text-white">{nameOrUsername(contact)}</span>
+              </div>
+            </TableCell>
+            <TableCell className="hidden sm:table-cell font-mono text-xs text-neutral-400 max-w-[200px] truncate">
+              <span className="hidden md:inline">{contact.wallet_address}</span>
+              <span className="md:hidden">{formatWalletAddress(contact.wallet_address)}</span>
+            </TableCell>
+            <TableCell className="text-right">
+              <TransferModal type="contact" contact={contact} />
+            </TableCell>
+          </TableRow>
+        ))
       ) : (
-        <div className="text-center py-12 h-[236px] overflow-y-auto flex flex-col justify-center items-center">
-          <h3 className="text-lg font-medium">{t("contacts.empty.title")}</h3>
-          <p className="text-muted-foreground mt-1">
-            {t("contacts.empty.description")}
-          </p>
-        </div>
+        <TableRow>
+          <TableCell colSpan={3} className="text-center text-neutral-400 py-8">
+            {searchQuery
+              ? t("contacts.search.noResults")
+              : t("contacts.empty.title")}
+          </TableCell>
+        </TableRow>
       )}
-    </CardContent>
+    </>
   );
 };

@@ -77,12 +77,12 @@ export const TransferModalSecondStep = ({
       </div>
 
       <div className="flex justify-between gap-4 pt-4">
-        <Button variant="outline" onClick={onBack} className="w-full">
+        <Button variant="ghost" onClick={onBack} className="w-full cursor-pointer bg-neutral-50/5 hover:bg-neutral-50/10">
           {t("transfer.button.back")}
         </Button>
         <Button
           onClick={onConfirm}
-          className="w-full bg-violet-600 hover:bg-violet-700 text-blue-50"
+          className="w-full bg-violet-600 hover:bg-violet-700 text-blue-50 cursor-pointer"
         >
           {t("transfer.button.confirmTransfer")}
         </Button>

@@ -167,7 +167,7 @@ export const TransferSuccess = ({
 
       <Button
         onClick={onClick}
-        className="w-full bg-violet-600 hover:bg-violet-700 text-blue-50"
+        className="w-full bg-violet-600 hover:bg-violet-700 text-blue-50 cursor-pointer"
       >
         {t("transfer.button.done")}
       </Button>

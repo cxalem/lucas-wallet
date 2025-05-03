@@ -143,7 +143,7 @@ export default function TransferModal({
         <DialogTrigger asChild>
           <Button
             onClick={handleModalOpen}
-            className="bg-gradient-to-r from-violet-800 via-violet-600 to-violet-800 px-10 py-2 rounded-full text-zinc-50 font-medium hover:shadow-xl w-full duration-150 shadow-md"
+            className="bg-gradient-to-r cursor-pointer from-violet-800 via-violet-600 to-violet-800 px-10 py-2 rounded-full text-zinc-50 font-medium hover:shadow-xl w-full duration-150 shadow-md"
           >
             {t("transfer.button.trigger")}
           </Button>
