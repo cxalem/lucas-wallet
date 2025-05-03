@@ -10,8 +10,8 @@ import { LoadingIndicator } from "./loading-indicator";
 interface ChatContainerProps {
   messages: Message[];
   input: string;
-  handleInputChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  handleSubmit: (e: FormEvent<HTMLFormElement>) => void;
+  handleInputChange: (e: ChangeEvent<HTMLInputElement> | { target: { value: string } }) => void;
+  handleSubmit: (e: FormEvent<HTMLFormElement>, mentionedContacts?: {id: string, name: string}[]) => void;
   isLoading: boolean;
   messagesEndRef: RefObject<HTMLDivElement>;
 }
@@ -30,7 +30,7 @@ export function ChatContainer({
         <ChatHeader />
 
         <CardContent className="p-0 h-full">
-          <div className="h-full overflow-y-auto p-4 space-y-4">
+          <div className="h-full max-h-[calc(50vh)] overflow-y-auto p-4 space-y-4">
             {messages.length === 0 ? (
               <EmptyChat />
             ) : (

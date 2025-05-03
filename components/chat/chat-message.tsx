@@ -1,11 +1,81 @@
 import { Avatar } from "@/components/ui/avatar";
 import type { Message } from "@ai-sdk/react";
+import { useEffect, useState } from "react";
+import { MentionTooltip } from "@/components/contacts/mention-tooltip";
+import { Contact } from "@/types";
+import { getContacts } from "@/components/contacts/actions";
+import { useUser } from "@/context/user-context";
 
 interface ChatMessageProps {
   message: Message;
 }
 
 export function ChatMessage({ message }: ChatMessageProps) {
+  const [parsedContent, setParsedContent] = useState<React.ReactNode[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const { user } = useUser();
+
+  useEffect(() => {
+    if (!user) return;
+    
+    const fetchContacts = async () => {
+      const contactsData = await getContacts(user);
+      setContacts(contactsData);
+    };
+    
+    fetchContacts();
+  }, [user]);
+
+  useEffect(() => {
+    if (!message.parts || contacts.length === 0) return;
+
+    // Parse message text to find mentions
+    message.parts.forEach((part, idx) => {
+      if (part.type === "text") {
+        const nodes: React.ReactNode[] = [];
+        const text = part.text || "";
+        
+        // Match @username pattern
+        const regex = /@([a-zA-Z0-9_]+)/g;
+        let lastIndex = 0;
+        let match;
+        
+        while ((match = regex.exec(text)) !== null) {
+          const mentionName = match[1];
+          const matchedContact = contacts.find(contact => 
+            (contact.user_name && contact.user_name.toLowerCase() === mentionName.toLowerCase()) ||
+            ((contact.first_name || '') + (contact.last_name || '')).toLowerCase().replace(/\s+/g, '') === mentionName.toLowerCase()
+          );
+          
+          // Add text before the mention
+          if (match.index > lastIndex) {
+            nodes.push(text.substring(lastIndex, match.index));
+          }
+          
+          // Add the mention with tooltip if contact found
+          if (matchedContact) {
+            nodes.push(
+              <MentionTooltip key={`mention-${idx}-${match.index}`} contact={matchedContact}>
+                {match[0]}
+              </MentionTooltip>
+            );
+          } else {
+            nodes.push(match[0]);
+          }
+          
+          lastIndex = match.index + match[0].length;
+        }
+        
+        // Add remaining text
+        if (lastIndex < text.length) {
+          nodes.push(text.substring(lastIndex));
+        }
+        
+        setParsedContent(nodes);
+      }
+    });
+  }, [message.parts, contacts]);
+
   return (
     <div
       className={`flex ${
@@ -44,7 +114,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
                     key={`${message.id}-${i}`}
                     className="whitespace-pre-wrap"
                   >
-                    {part.text}
+                    {parsedContent.length > 0 ? parsedContent : part.text}
                   </div>
                 );
               default:
