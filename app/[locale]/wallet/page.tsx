@@ -3,10 +3,7 @@ import { createClient } from "@/utils/supabase/server";
 import { Suspense } from "react";
 import { BalanceCardSkeleton } from "@/components/balance-card/balance-card-skeleton";
 import { BalanceCard } from "@/components/balance-card";
-import dynamic from "next/dynamic";
 import Chat from "@/components/chat";
-
-const TransferModal = dynamic(() => import("@/components/transfer-modal"));
 
 export default async function PrivatePage() {
   const supabase = await createClient();
@@ -23,8 +20,8 @@ export default async function PrivatePage() {
           <Suspense fallback={<BalanceCardSkeleton />}>
             <div className="flex flex-col gap-4 justify-between items-stretch h-full">
               <div className="flex flex-col gap-4">
+                {/* <BalanceCard user_metadata={user_metadata} /> */}
                 <BalanceCard user_metadata={user_metadata} />
-                <TransferModal />
               </div>
               <Chat />
             </div>

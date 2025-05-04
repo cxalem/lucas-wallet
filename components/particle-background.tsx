@@ -12,6 +12,8 @@ interface Particle {
   shineTimer: number;
   isShining: boolean;
   shineProgress: number; // Track transition progress
+  baseSpeedX: number;
+  baseSpeedY: number;
 }
 
 export default function ParticleBackground() {
@@ -40,16 +42,21 @@ export default function ParticleBackground() {
       particlesRef.current = [];
 
       for (let i = 0; i < particleCount; i++) {
+        const baseSpeedX = Math.random() * 0.2 - 0.1;
+        const baseSpeedY = Math.random() * 0.2 - 0.1;
+        
         particlesRef.current.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
           size: Math.random() * 1 + 0.2,
-          speedX: Math.random() * 0.2 - 0.1,
-          speedY: Math.random() * 0.2 - 0.1,
+          speedX: baseSpeedX,
+          speedY: baseSpeedY,
           opacity: Math.random() * 0.5 + 0.2,
           shineTimer: Math.floor(Math.random() * 200),
           isShining: false,
           shineProgress: 0, // Start with no shine
+          baseSpeedX: baseSpeedX,
+          baseSpeedY: baseSpeedY,
         });
       }
     };
@@ -74,9 +81,9 @@ export default function ParticleBackground() {
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     };
 
-    // Ease in-out function
-    const easeInOutCubic = (x: number): number => {
-      return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+    // Smooth easing function for mouse influence
+    const easeOutQuad = (x: number): number => {
+      return 1 - (1 - x) * (1 - x);
     };
 
     // Animation loop
@@ -97,32 +104,58 @@ export default function ParticleBackground() {
         if (particle.y < 0) particle.y = canvas.height;
         if (particle.y > canvas.height) particle.y = 0;
 
-        // Mouse interaction - gentle repulsion
+        // Mouse interaction - gentle nudging
         const dx = mousePosition.x - particle.x;
         const dy = mousePosition.y - particle.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
-
-        if (distance < 150) {
-          const forceDirectionX = dx / distance;
-          const forceDirectionY = dy / distance;
-          const force = (150 - distance) / 150;
-
-          // Repel instead of attract
-          particle.speedX -= forceDirectionX * force * 0.05;
-          particle.speedY -= forceDirectionY * force * 0.05;
-
-          // Directly modify position for immediate effect
-          particle.x -= forceDirectionX * force * 1;
-          particle.y -= forceDirectionY * force * 1;
+        const influenceRadius = 150;
+        
+        // Apply gentle mouse influence with smooth falloff
+        if (distance < influenceRadius && distance > 0) {
+          // Calculate normalized direction away from mouse
+          const dirX = -dx / distance; // Negative for repulsion
+          const dirY = -dy / distance;
+          
+          // Calculate influence strength with smooth falloff
+          // Stronger near mouse, weaker at edges of influence radius
+          const normalizedDistance = distance / influenceRadius;
+          const falloff = 1 - easeOutQuad(normalizedDistance);
+          
+          // Maximum per-frame influence (very gentle)
+          const maxInfluence = 0.05; // Increased from 0.02 for more visible effect
+          const influence = maxInfluence * falloff;
+          
+          // Calculate target velocity changes (small nudges)
+          const targetChangeX = dirX * influence;
+          const targetChangeY = dirY * influence;
+          
+          // Smoothly interpolate current velocity toward target (gentle turning)
+          const easing = 0.15; // Increased from 0.05 for more noticeable turning
+          particle.speedX += targetChangeX * easing;
+          particle.speedY += targetChangeY * easing;
         }
+        
+        // Apply gentle damping to return to base drift
+        const dampingFactor = 0.995; // Very slight damping
+        const returnFactor = 0.001; // Very slow return to base speed
+        
+        // Dampen current speed
+        particle.speedX *= dampingFactor;
+        particle.speedY *= dampingFactor;
+        
+        // Gradually return to base speed
+        particle.speedX += (particle.baseSpeedX - particle.speedX) * returnFactor;
+        particle.speedY += (particle.baseSpeedY - particle.speedY) * returnFactor;
 
-        // Limit speed
-        const speed = Math.sqrt(
+        // Limit speed to keep motion tranquil
+        const maxSpeed = 0.3;
+        const currentSpeed = Math.sqrt(
           particle.speedX * particle.speedX + particle.speedY * particle.speedY
         );
-        if (speed > 0.5) {
-          particle.speedX = (particle.speedX / speed) * 0.5;
-          particle.speedY = (particle.speedY / speed) * 0.5;
+        
+        if (currentSpeed > maxSpeed && currentSpeed > 0) {
+          particle.speedX = (particle.speedX / currentSpeed) * maxSpeed;
+          particle.speedY = (particle.speedY / currentSpeed) * maxSpeed;
         }
 
         // Random shine effect
@@ -142,7 +175,7 @@ export default function ParticleBackground() {
         }
 
         // Apply ease-in-out curve to progress
-        const easedProgress = easeInOutCubic(particle.shineProgress);
+        const easedProgress = easeOutQuad(particle.shineProgress);
 
         // White particles for dark mode
         const particleColor = "255, 255, 255";
@@ -212,7 +245,7 @@ export default function ParticleBackground() {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed left-0 top-0 -z-10 h-full w-full"
+      className="fixed left-0 top-0 -z-20 h-full w-full"
     />
   );
 }

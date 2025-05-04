@@ -9,6 +9,14 @@ import { BalanceCardSkeleton } from "./balance-card-skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Copy, Check, User } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import { ChevronDown, SendIcon } from "lucide-react";
+import TransferModal from "../transfer-modal";
 
 // Assuming 1 USDC = $1
 const USDC_TO_USD_RATE = 1;
@@ -90,9 +98,9 @@ export const BalanceCard = ({
     // Apply space-y-4 for layout between card and modal
     <div className="space-y-4">
       {/* Gradient wrapper */}
-      <div className="bg-gradient-to-b flex flex-col from-red-600 via-yellow-600 to-purple-600 p-[1px] rounded-xl w-full shadow-2xl shadow-yellow-600/30 ">
+      <div className="bg-gradient-to-b duration-150 flex flex-col from-red-600 via-yellow-600 to-purple-600 p-[1px] rounded-xl w-full shadow-2xl shadow-yellow-600/30 ">
         {/* Card now sits inside the gradient wrapper */}
-        <Card className="w-full bg-zinc-800 border-zinc-700 rounded-xl">
+        <Card className="w-full bg-neutral-800 border-zinc-700 rounded-xl">
           {" "}
           {/* Adjusted rounding */}
           <CardContent className="py-4">
@@ -102,9 +110,9 @@ export const BalanceCard = ({
                   {/* Use initials or fallback icon */}
                   <AvatarFallback>{initials}</AvatarFallback>
                 </Avatar>
-                <div>
+                <div className="flex flex-col justify-start">
                   {/* Use "My Wallet" or keep dynamic name */}
-                  <p className="font-medium text-xl text-white">
+                  <p className="font-medium text-xl text-left text-white">
                     {"My Wallet"}
                   </p>
                   <div className="flex items-center gap-1.5">
@@ -125,11 +133,36 @@ export const BalanceCard = ({
                   </div>
                 </div>
               </div>
-              <div className="text-right">
-                <p className="font-medium text-xl text-white">${usdValue}</p>
-                <p className="text-sm hidden md:block text-zinc-400">
-                  {formattedUsdcBalance} {t("wallet.crypto") || "USDC"}
-                </p>
+              <div className="flex items-center gap-6">
+                <div className="text-right">
+                  <p className="font-medium text-xl text-white">${usdValue}</p>
+                  <p className="text-sm hidden md:block text-zinc-400">
+                    {formattedUsdcBalance} {t("wallet.crypto") || "USDC"}
+                  </p>
+                </div>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="flex items-center bg-neutral-700 hover:bg-neutral-600 border-zinc-700 rounded-xl p-2 text-zinc-400 hover:text-white cursor-pointer transition-colors">
+                      <ChevronDown className="h-5 w-5" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    className="w-48 bg-zinc-800 border-zinc-700"
+                  >
+                    <DropdownMenuItem asChild className="w-fit">
+                      <TransferModal
+                        triggerButton={
+                          <button className="flex w-full justify-center h-full text-sm px-1 py-1 hover:bg-neutral-700 rounded-sm duration-150 items-center gap-3 text-white cursor-pointer">
+                            <SendIcon className="h-4 w-4" />
+                            <span>Send Transaction</span>
+                          </button>
+                        }
+                      />
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           </CardContent>

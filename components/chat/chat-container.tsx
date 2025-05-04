@@ -11,7 +11,7 @@ interface ChatContainerProps {
   messages: Message[];
   input: string;
   handleInputChange: (e: ChangeEvent<HTMLInputElement> | { target: { value: string } }) => void;
-  handleSubmit: (e: FormEvent<HTMLFormElement>, mentionedContacts?: {id: string, name: string}[]) => void;
+  handleSubmit: (e: FormEvent<HTMLFormElement>, mentionedContacts?: {id: string, name: string}[], transactionResult?: {success: boolean, hash?: string, error?: string}) => void;
   isLoading: boolean;
   messagesEndRef: RefObject<HTMLDivElement>;
 }
@@ -24,6 +24,25 @@ export function ChatContainer({
   isLoading,
   messagesEndRef,
 }: ChatContainerProps) {
+  // This function will be passed to ChatMessage components to handle transaction results
+  const handleTransactionResult = (success: boolean, data: {hash?: string, error?: string}) => {
+    // Create a custom event to pass transaction results to the handleSubmit function
+    const customEvent = {
+      preventDefault: () => {},
+    } as FormEvent<HTMLFormElement>;
+    
+    // Call handleSubmit with the transaction result
+    handleSubmit(
+      customEvent, 
+      undefined, 
+      {
+        success,
+        ...(data.hash && { hash: data.hash }),
+        ...(data.error && { error: data.error })
+      }
+    );
+  };
+
   return (
     <section className="flex flex-col items-center text-zinc-100 h-full">
       <Card className="w-full max-w-3xl flex flex-col justify-between shadow-lg border-neutral-50/10 bg-neutral-800 h-full">
@@ -35,7 +54,11 @@ export function ChatContainer({
               <EmptyChat />
             ) : (
               messages.map((message) => (
-                <ChatMessage key={message.id} message={message} />
+                <ChatMessage 
+                  key={message.id} 
+                  message={message} 
+                  onTransactionResult={handleTransactionResult}
+                />
               ))
             )}
 

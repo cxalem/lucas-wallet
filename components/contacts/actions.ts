@@ -56,3 +56,31 @@ export const getContact = async (ownerId: string) => {
 
   return data;
 };
+
+export const getUserByUsername = async (username: string) => {
+  const supabase = await createClient();
+
+  // Try to find the contact by username first
+  const { data: contactData } = await supabase
+    .from("contacts")
+    .select("*")
+    .eq("user_name", username)
+    .single();
+
+  if (contactData) {
+    return contactData;
+  }
+
+  // If not found by username, try to find the user in auth.users
+  const { data: userData } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("user_name", username)
+    .single();
+
+  if (userData) {
+    return userData;
+  }
+
+  return null;
+};

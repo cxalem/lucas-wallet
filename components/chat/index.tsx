@@ -11,6 +11,9 @@ import type { ChangeEvent, FormEvent } from "react";
 // Create a type that matches the required event structure for chatHandleInputChange
 type ChatInputEvent = ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>;
 
+// Create a type for submit events, which could be form events or custom event-like objects
+type SubmitEventType = FormEvent<HTMLFormElement> | { preventDefault?: () => void };
+
 // Create a function to convert simple value objects to event-like objects
 const createEventFromValue = (value: string): ChatInputEvent => {
   // Create a simpler synthetic event that includes only the essential properties
@@ -56,16 +59,15 @@ export default function Chat() {
   };
 
   // Adapter for submit handler
-  const handleSubmit = (e: FormEvent<HTMLFormElement>, mentionedContacts?: {id: string, name: string}[]) => {
-    // Store mentionedContacts in the AI message metadata
-    const options = {
-      data: {
-        mentions: mentionedContacts || []
-      }
-    };
+  const handleSubmit = (e: SubmitEventType) => {
+    // Only call preventDefault if it exists
+    if (e && typeof e.preventDefault === 'function') {
+      e.preventDefault();
+    }
     
-    // You can store mentionedContacts in state or process them here if needed
-    chatHandleSubmit(e, options);
+    // Simply pass the event to the original handler
+    // The API will extract any @mentions from the message content
+    chatHandleSubmit(e);
   };
 
   useEffect(() => {
