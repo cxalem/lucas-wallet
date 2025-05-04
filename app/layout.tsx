@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { unstable_ViewTransition as ViewTransition } from "react";
-import ParticleBackground from "@/components/particle-background";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -31,7 +31,6 @@ export default function RootLayout({
           <body
             className={`${geistSans.variable} ${geistMono.variable} dark:bg-gradient-to-b from-neutral-950 to-neutral-900 relative bg-neutral-100 text-foreground antialiased text-zinc-800 dark:text-blue-50 min-h-screen`}
           >
-            <ParticleBackground />
             {children}
           </body>
         </ViewTransition>

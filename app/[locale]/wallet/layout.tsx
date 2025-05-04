@@ -5,10 +5,14 @@ import { SignOutButton } from "@/components/sing-out-button";
 import Link from "next/link";
 import { I18nProviderClient } from "@/locales/client";
 import { getCurrentLocale } from "@/locales/server";
-import LanguageSwitcher from "@/components/language-switcher";
 import { unstable_ViewTransition as ViewTransition } from "react";
 import ParticleBackground from "@/components/particle-background";
 import { SidebarNav } from "@/components/sidebar-nav";
+import dynamic from "next/dynamic";
+
+const LanguageSwitcher = dynamic(
+  () => import("@/components/language-switcher")
+);
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

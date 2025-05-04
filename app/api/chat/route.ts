@@ -69,8 +69,13 @@ const getUserByUsername = async (username: string) => {
 export async function POST(req: Request) {
   // ─── Parse body ────────────────────────────────────────────────────────────
   let messages: LucasWalletMessage[];
+  let requestBody;
+  
   try {
-    ({ messages } = await req.json());
+    // Read the request body only once
+    requestBody = await req.json();
+    // Extract messages from the parsed body
+    ({ messages } = requestBody);
   } catch (err) {
     console.error("Error parsing JSON body:", err);
     return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
@@ -120,7 +125,22 @@ export async function POST(req: Request) {
   // ─── Build dynamic prompt chunk ────────────────────────────────────────────
   const profileLines = Object.entries(userMetadata)
     .filter(([, d]) => d)
-    .map(([u, d]) => `- @${u}: ${safeJson({ wallet: d!.walletAddress })}`);
+    .map(([u, d]) => {
+      console.log(`Data for @${u}:`, JSON.stringify(d));
+
+      // Access the first element of the array 'd' and then get wallet_address
+      const userObject = Array.isArray(d) ? d[0] : d;
+      const walletAddr = (userObject as { wallet_address?: string | null })?.wallet_address;
+
+      // Log what address was found (or null)
+      console.log(`Extracted wallet for @${u}:`, walletAddr);
+
+      // Build the line, using the found address or an empty object if null
+      const walletData = walletAddr ? { wallet: walletAddr } : {}; 
+      return `- @${u}: ${safeJson(walletData)}`;
+    });
+
+  console.log("Profile lines:", profileLines);
 
   const userDataPrompt = profileLines.length
     ? `### Available User Data
@@ -173,6 +193,7 @@ When someone mentions one of these users, you can use their information (like wa
             return { error: "User has not confirmed" };
           }
           // 🔒 Place your real on-chain call here
+          console.log("Sending USDC to:", to, "amount:", amount);
           return { to, amount };
         },
       }),

@@ -20,7 +20,6 @@ export default async function PrivatePage() {
           <Suspense fallback={<BalanceCardSkeleton />}>
             <div className="flex flex-col gap-4 justify-between items-stretch h-full">
               <div className="flex flex-col gap-4">
-                {/* <BalanceCard user_metadata={user_metadata} /> */}
                 <BalanceCard user_metadata={user_metadata} />
               </div>
               <Chat />

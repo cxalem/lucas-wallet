@@ -148,6 +148,9 @@ export function ChatMessage({
         >
           {/* Render message parts */}
           {message.parts?.map((part, i) => {
+            // Debug: Log message parts to see what we're getting
+            console.log(`Message part ${i}:`, part);
+            
             // Text parts - render with mentions
             if (part.type === "text") {
               return (
@@ -158,22 +161,27 @@ export function ChatMessage({
             }
             // Tool invocation parts - render transaction confirmation if needed
             else if (part.type === "tool-invocation") {
+              console.log("Found tool invocation:", part.toolInvocation);
+              
               if (part.toolInvocation.toolName === "sendUSDC") {
+                console.log("Found sendUSDC tool call with args:", part.toolInvocation.args);
+                
                 // Only access args if transaction hasn't been processed yet
                 if (!transactionHash && !transactionError) {
-                  const args = part.toolInvocation.args;
-
+                  const args = part.toolInvocation.args;;
                   return (
                     <TransactionConfirmationWrapper
                       key={`${message.id}-tool-${i}`}
                       recipient={args.to}
-                      amount={args.amount}
+                      amount={parseFloat(args.amount)}
                       onSuccess={handleTransactionSuccess}
                       onError={handleTransactionError}
                     />
                   );
                 }
               }
+            } else {
+              console.log("Unknown part type:", part.type);
             }
             return null;
           })}

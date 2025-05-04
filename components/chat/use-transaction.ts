@@ -32,6 +32,7 @@ export function useTransaction(initialRecipient: string) {
     
     try {
       // Check if it's a valid Solana address
+      console.log("Checking if recipient is a valid Solana address:", recipient);
       const isValidAddress = isValidSolanaAddress(recipient);
       
       // First, check if we can find a user associated with this address/username
