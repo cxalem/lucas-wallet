@@ -64,7 +64,7 @@ export const BalanceCard = ({
   const name = user_metadata.user_name || user_metadata.first_name || "";
   const initials = name
     .split(" ")
-    .map((n: string) => n[0])
+    .map((n: string) => `${n[0]}${n[1]}`)
     .join("")
     .toUpperCase() || <User className="h-5 w-5" />;
 
