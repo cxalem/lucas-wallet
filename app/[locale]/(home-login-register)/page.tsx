@@ -13,6 +13,10 @@ export default async function Home() {
   }
 
   return (
-    <Hero title={t("home.title")} subtitle={t("home.subtitle")} />
+    <div className="flex flex-col items-center justify-center">
+      <Hero title={t("home.title")} subtitle={t("home.subtitle")} />
+
+
+    </div>
   );
 }

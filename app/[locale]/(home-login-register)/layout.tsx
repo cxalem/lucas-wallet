@@ -26,9 +26,42 @@ export default function RootLayout({
 }>) {
   return (
     <main
-      className={`${geistSans.variable} ${geistMono.variable} min-h-screen [background-image:linear-gradient(to_right,#1F1F1F,transparent_1px),linear-gradient(to_bottom,#1F1F1F,transparent_1px)] [background-size:24px_24px]`}
+      className={`${geistSans.variable} ${geistMono.variable} min-h-screen relative overflow-hidden`}
     >
-      <div className="fixed inset-0 w-full h-full bg-repeat bg-noise opacity-10 bg-[length:250px] -z-10"></div>
+      {/* SVG Curved Grid Background - denser, smaller grid */}
+      <svg
+        className="absolute inset-0 w-full h-full -z-10"
+        viewBox="0 0 1440 800"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        preserveAspectRatio="none"
+      >
+        {/* More vertical grid lines, closer together */}
+        {[...Array(25)].map((_, i) => {
+          const x = 60 * i;
+          return (
+            <path
+              key={`v-${i}`}
+              d={`M${x},800 Q${x - 360},400 ${x},0`}
+              stroke="#171717"
+              strokeWidth="1.2"
+            />
+          );
+        })}
+        {/* More horizontal grid lines, closer together */}
+        {[...Array(13)].map((_, i) => {
+          const y = 60 * i;
+          return (
+            <path
+              key={`h-${i}`}
+              d={`M0,${800 - y} Q720,${800 - y - 200} 1440,${800 - y}`}
+              stroke="#171717"
+              strokeWidth="1.2"
+            />
+          );
+        })}
+      </svg>
+      <div className="fixed inset-0 w-full h-full bg-repeat bg-noise opacity-10 bg-[length:250px] pointer-events-none -z-10"></div>
       <ViewTransition>
         <Navbar />
         {children}

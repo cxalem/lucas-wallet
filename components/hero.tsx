@@ -114,7 +114,7 @@ export default function Hero({ title, subtitle }: HeroProps) {
    }
 
    return (
-      <section className="relative flex flex-col items-center justify-center font-[family-name:var(--font-geist-sans)] bg-gradient-radial from-neutral-950 via-neutral-900 to-neutral-950 text-neutral-100 overflow-hidden">
+      <section className="relative flex flex-col items-center justify-center font-[family-name:var(--font-geist-sans)] text-neutral-100 overflow-hidden">
          <div className="mt-8">
             <div className="flex flex-col">
                <h1 className="text-4xl md:text-6xl font-bold md:font-black text-center">
