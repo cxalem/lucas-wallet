@@ -26,7 +26,7 @@ export default function RootLayout({
 }>) {
   return (
     <main
-      className={`${geistSans.variable} ${geistMono.variable} min-h-screen`}
+      className={`${geistSans.variable} ${geistMono.variable} min-h-screen [background-image:linear-gradient(to_right,#1F1F1F,transparent_1px),linear-gradient(to_bottom,#1F1F1F,transparent_1px)] [background-size:24px_24px]`}
     >
       <div className="fixed inset-0 w-full h-full bg-repeat bg-noise opacity-10 bg-[length:250px] -z-10"></div>
       <ViewTransition>

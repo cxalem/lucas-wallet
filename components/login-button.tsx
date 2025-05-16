@@ -27,7 +27,7 @@ export default function LoginButton({
 
   return (
     <Link href="/login">
-      <Button className="bg-violet-600 px-10 py-2 rounded-full text-zinc-50 font-medium hover:bg-violet-700 shadow-lg">
+      <Button className="bg-violet-600 cursor-pointer px-10 py-2 rounded-full text-zinc-50 font-medium hover:bg-violet-700 shadow-lg">
         {t("login.button.sendMoney")}
       </Button>
     </Link>
