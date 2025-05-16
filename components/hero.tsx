@@ -114,7 +114,7 @@ export default function Hero({ title, subtitle }: HeroProps) {
    }
 
    return (
-      <section className="relative flex flex-col items-center justify-center font-[family-name:var(--font-geist-sans)] bg-gradient-radial from-neutral-950 via-neutral-900 to-neutral-950 text-white overflow-hidden">
+      <section className="relative flex flex-col items-center justify-center font-[family-name:var(--font-geist-sans)] bg-gradient-radial from-neutral-950 via-neutral-900 to-neutral-950 text-neutral-100 overflow-hidden">
          <div className="mt-8">
             <div className="flex flex-col">
                <h1 className="text-4xl md:text-6xl font-bold md:font-black text-center">
@@ -126,9 +126,9 @@ export default function Hero({ title, subtitle }: HeroProps) {
             </div>
 
             <div className="mx-auto h-[550px] rounded-2xl border bg-neutral-900 border-neutral-700/50 backdrop-blur py-4 sm:px-6 w-full sm:w-[90%] md:w-[600px] mb-8 flex flex-col [mask-image:linear-gradient(to_bottom,transparent,black_60%,black)]">
-               <div className="pb-3 border-b border-neutral-800">
+               <div className="pb-3 border-b text-neutral-100 border-neutral-800">
                   <h3 className="text-lg sm:text-xl font-semibold text-neutral-50">Lucas Assistant</h3>
-                  <p className="text-xs sm:text-sm text-neutral-400">
+                  <p className="text-xs sm:text-sm">
                      This assistant will help you to execute transactions like buying crypto, sending payments, and more.
                   </p>
                </div>
@@ -215,7 +215,7 @@ export default function Hero({ title, subtitle }: HeroProps) {
                            transition={{ duration: 0.5 }}
                         >
                            <div className="bg-emerald-600/20 text-emerald-300 p-2 sm:p-3 rounded-2xl rounded-tl-sm text-sm text-start sm:text-base">
-                               ✅ Your transaction has been sent, I&apos;ve let @meowy know that you paid for today&apos;s dinner.
+                              ✅ Your transaction has been sent, I&apos;ve let @meowy know that you paid for today&apos;s dinner.
                            </div>
                         </motion.div>
                      )}

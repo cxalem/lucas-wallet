@@ -38,7 +38,7 @@ export default async function RootLayout({
   return (
     <I18nProviderClient locale={locale}>
       <main
-        className={`${geistSans.variable} ${geistMono.variable} relative z-50 dark:bg-gradient-to-b from-neutral-950 to-neutral-900 dark:text-blue-50 bg-neutral-100 text-foreground antialiased text-zinc-800 max-w-[100vw] overflow-x-hidden`}
+        className={`${geistSans.variable} ${geistMono.variable} relative z-50 bg-gradient-to-b from-neutral-950 to-neutral-900 text-blue-50 bg-neutral-100 text-foreground antialiased max-w-[100vw] overflow-x-hidden`}
       >
         <div className="fixed inset-0 w-full h-full bg-repeat bg-noise opacity-10 bg-[length:350px] z-[-20]"></div>
         <ViewTransition>
