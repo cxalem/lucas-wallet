@@ -60,7 +60,6 @@ export const BalanceCard = ({
     }
   };
 
-  // Get initials for Avatar
   const name = user_metadata.user_name || user_metadata.first_name || "";
   const initials = name
     .split(" ")
@@ -70,7 +69,6 @@ export const BalanceCard = ({
 
   if (isLoading) return <BalanceCardSkeleton />;
 
-  // Improved Error Handling
   if (error || !usdcBalance) {
     return (
       <div className="space-y-4">
@@ -95,23 +93,18 @@ export const BalanceCard = ({
   const usdValue = (numericBalance * USDC_TO_USD_RATE).toFixed(2);
 
   return (
-    // Apply space-y-4 for layout between card and modal
     <div className="space-y-4">
       {/* Gradient wrapper */}
-      <div className="bg-gradient-to-b duration-150 flex flex-col from-red-600 via-yellow-600 to-purple-600 p-[1px] rounded-xl w-full shadow-2xl shadow-yellow-600/30 ">
-        {/* Card now sits inside the gradient wrapper */}
+      <div className="bg-gradient-to-b duration-150 flex flex-col from-red-600 via-yellow-600 to-purple-600 p-[1px] rounded-xl w-full shadow-lg shadow-yellow-600/30 ">
         <Card className="w-full bg-neutral-800 border-zinc-700 rounded-xl">
           {" "}
-          {/* Adjusted rounding */}
           <CardContent className="py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Avatar className="h-12 w-12 bg-zinc-800 border hidden md:block border-zinc-700">
-                  {/* Use initials or fallback icon */}
                   <AvatarFallback>{initials}</AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col justify-start">
-                  {/* Use "My Wallet" or keep dynamic name */}
                   <p className="font-medium text-xl text-left text-white">
                     {"My Wallet"}
                   </p>
