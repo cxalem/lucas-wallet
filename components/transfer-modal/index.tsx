@@ -136,7 +136,13 @@ export default function TransferModal({
   }
 
   return (
-    <Dialog onOpenChange={(open) => !open && handleClose()}>
+    <Dialog onOpenChange={(open) => {
+      if (open) {
+        handleModalOpen();
+      } else {
+        handleClose();
+      }
+    }}>
       {triggerButton ? (
         <DialogTrigger asChild>{triggerButton}</DialogTrigger>
       ) : type === "transfer" ? (
