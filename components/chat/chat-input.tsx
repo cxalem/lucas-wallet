@@ -8,6 +8,7 @@ import { MentionsDropdown } from "@/components/contacts/mentions-dropdown";
 import { Contact } from "@/types";
 import { getContacts } from "@/components/contacts/actions";
 import { useUser } from "@/context/user-context";
+import { createClient } from "@/utils/supabase/client";
 
 interface ChatInputProps {
   input: string;
@@ -39,15 +40,38 @@ export function ChatInput({
   const { user } = useUser();
 
   useEffect(() => {
-    if (!user) return;
+    console.log('ChatInput useEffect - user:', user?.id);
     
-    // Fetch contacts when component mounts
-    const fetchContacts = async () => {
-      const contactsData = await getContacts(user);
-      setContacts(contactsData);
+    const fetchUserAndContacts = async () => {
+      if (!user) {
+        console.log('No user found, fetching session...');
+        const supabase = createClient();
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          console.log('Session found, fetching contacts for:', session.user.id);
+          try {
+            const contactsData = await getContacts(session.user);
+            console.log('Contacts fetched:', contactsData.length);
+            setContacts(contactsData);
+          } catch (error) {
+            console.error('Error fetching contacts:', error);
+          }
+        }
+        return;
+      }
+      
+      // If we have a user, fetch contacts
+      console.log('Fetching contacts for user:', user.id);
+      try {
+        const contactsData = await getContacts(user);
+        console.log('Contacts fetched:', contactsData.length);
+        setContacts(contactsData);
+      } catch (error) {
+        console.error('Error fetching contacts:', error);
+      }
     };
     
-    fetchContacts();
+    fetchUserAndContacts();
   }, [user]);
 
   const handleQuickMessage = (message: string) => {

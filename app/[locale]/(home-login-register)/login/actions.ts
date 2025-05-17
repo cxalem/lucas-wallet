@@ -25,6 +25,16 @@ export async function login(formData: FormData) {
     };
   }
 
+  // Ensure we have a session before redirecting
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    return {
+      error: "Failed to establish session",
+      status: 500,
+      errorName: "SessionError",
+    };
+  }
+
   revalidatePath("/", "layout");
   redirect("/wallet");
 }

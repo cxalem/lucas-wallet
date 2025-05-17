@@ -22,7 +22,7 @@ const createEventFromValue = (value: string): ChatInputEvent => {
     name: '',
     type: 'text',
   } as HTMLInputElement;
-  
+
   return {
     target: mockInputElement,
     currentTarget: mockInputElement,
@@ -32,11 +32,11 @@ const createEventFromValue = (value: string): ChatInputEvent => {
     defaultPrevented: false,
     eventPhase: 0,
     isTrusted: false,
-    preventDefault: () => {},
+    preventDefault: () => { },
     isDefaultPrevented: () => false,
-    stopPropagation: () => {},
+    stopPropagation: () => { },
     isPropagationStopped: () => false,
-    persist: () => {},
+    persist: () => { },
     timeStamp: Date.now(),
     type: 'change'
   } as ChatInputEvent;
@@ -64,7 +64,7 @@ export default function Chat() {
     if (e && typeof e.preventDefault === 'function') {
       e.preventDefault();
     }
-    
+
     // Simply pass the event to the original handler
     // The API will extract any @mentions from the message content
     chatHandleSubmit(e);
@@ -93,6 +93,7 @@ export default function Chat() {
   return (
     <ChatContainer
       messages={messages}
+      user={user}
       input={input}
       handleInputChange={handleInputChange}
       handleSubmit={handleSubmit}

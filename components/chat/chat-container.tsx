@@ -6,12 +6,14 @@ import type { Message } from "@ai-sdk/react";
 import type { ChangeEvent, FormEvent, RefObject } from "react";
 import { EmptyChat } from "./empty-chat";
 import { LoadingIndicator } from "./loading-indicator";
+import { User } from "@supabase/supabase-js";
 
 interface ChatContainerProps {
   messages: Message[];
+  user: User;
   input: string;
   handleInputChange: (e: ChangeEvent<HTMLInputElement> | { target: { value: string } }) => void;
-  handleSubmit: (e: FormEvent<HTMLFormElement>, mentionedContacts?: {id: string, name: string}[], transactionResult?: {success: boolean, hash?: string, error?: string}) => void;
+  handleSubmit: (e: FormEvent<HTMLFormElement>, mentionedContacts?: { id: string, name: string }[], transactionResult?: { success: boolean, hash?: string, error?: string }) => void;
   isLoading: boolean;
   messagesEndRef: RefObject<HTMLDivElement>;
 }
@@ -25,16 +27,16 @@ export function ChatContainer({
   messagesEndRef,
 }: ChatContainerProps) {
   // This function will be passed to ChatMessage components to handle transaction results
-  const handleTransactionResult = (success: boolean, data: {hash?: string, error?: string}) => {
+  const handleTransactionResult = (success: boolean, data: { hash?: string, error?: string }) => {
     // Create a custom event to pass transaction results to the handleSubmit function
     const customEvent = {
-      preventDefault: () => {},
+      preventDefault: () => { },
     } as FormEvent<HTMLFormElement>;
-    
+
     // Call handleSubmit with the transaction result
     handleSubmit(
-      customEvent, 
-      undefined, 
+      customEvent,
+      undefined,
       {
         success,
         ...(data.hash && { hash: data.hash }),
@@ -54,9 +56,9 @@ export function ChatContainer({
               <EmptyChat />
             ) : (
               messages.map((message) => (
-                <ChatMessage 
-                  key={message.id} 
-                  message={message} 
+                <ChatMessage
+                  key={message.id}
+                  message={message}
                   onTransactionResult={handleTransactionResult}
                 />
               ))
