@@ -426,8 +426,8 @@ export const addTransactionToDb = async (
   const supabase = await createClient();
   const { data, error } = await supabase.from("transactions").insert({
     transaction_hash: transaction.signature,
-    from: JSON.stringify(from_user),
-    to: JSON.stringify(to_user),
+    from: from_user,
+    to: to_user,
     created_at: created_at,
   });
   if (error) {

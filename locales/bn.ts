@@ -65,6 +65,11 @@ export default {
   "contacts.list.description":
     "সর্বশেষ কন্টাক্ট যাদের কাছে আপনি অর্থ পাঠিয়েছেন",
   "contacts.error.noUser": "কোন ব্যবহারকারী পাওয়া যায়নি",
+  "contacts.table.header.name": "নাম",
+  "contacts.table.header.address": "ঠিকানা",
+  "contacts.table.header.actions": "অ্যাকশন",
+  "contacts.table.action.send": "পাঠান",
+  "contacts.search.noResults": "আপনার অনুসন্ধানের সাথে কোন কন্টাক্ট মিলছে না।",
 
   // Transfer Modal First Step component
   "transfer.email.label": "ইমেইল, ইউজারনেম বা ওয়ালেট ঠিকানা",

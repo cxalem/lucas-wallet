@@ -69,6 +69,11 @@ export default {
   "contacts.list.title": "Transfer money to your contacts",
   "contacts.list.description": "Last contacts wey you don transfer money to",
   "contacts.error.noUser": "No user dey",
+  "contacts.table.header.name": "Name",
+  "contacts.table.header.address": "Address",
+  "contacts.table.header.actions": "Actions",
+  "contacts.table.action.send": "Send",
+  "contacts.search.noResults": "No contacts match your search.",
 
   // Transfer Modal First Step component
   "transfer.email.label": "Email, Username or Wallet Address",

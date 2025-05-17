@@ -16,6 +16,7 @@ export function useTransaction(initialRecipient: string) {
   const [transactionHash, setTransactionHash] = useState<string>("");
   const [resolvedAddress, setResolvedAddress] = useState<string | null>(null);
   const [recipientName, setRecipientName] = useState<string>(initialRecipient);
+  const [recipientEmail, setRecipientEmail] = useState<string>("");
   
   const { user } = useUser();
   const supabase = createClient();
@@ -51,6 +52,7 @@ export function useTransaction(initialRecipient: string) {
           // If we found a match, use the wallet address and display name
           setResolvedAddress(matchedContact.wallet_address);
           setRecipientName(matchedContact.user_name || matchedContact.email || recipient);
+          setRecipientEmail(matchedContact.email || "");
           setStatus("idle");
           return true;
         }
@@ -66,6 +68,7 @@ export function useTransaction(initialRecipient: string) {
       if (!error && data && data.length > 0 && data[0].wallet_address) {
         setResolvedAddress(data[0].wallet_address);
         setRecipientName(data[0].user_name || data[0].email || recipient);
+        setRecipientEmail(data[0].email || "");
         setStatus("idle");
         return true;
       }
@@ -156,7 +159,7 @@ export function useTransaction(initialRecipient: string) {
       await addTransactionToDb(
         txDetails,
         { wallet_address: txDetails.from, email: loggedUser.data.user.email! },
-        { wallet_address: txDetails.to, email: "" }, // We might not know the email in chat context
+        { wallet_address: txDetails.to, email: recipientEmail },
         new Date().toISOString()
       );
 
@@ -169,7 +172,7 @@ export function useTransaction(initialRecipient: string) {
       setStatus("error");
       throw err;
     }
-  }, [resolvedAddress, supabase]);
+  }, [resolvedAddress, supabase, recipientEmail]);
 
   // Initialize the transaction process
   const initTransaction = useCallback(async (recipient: string, 
@@ -191,6 +194,7 @@ export function useTransaction(initialRecipient: string) {
     transactionHash,
     recipientName,
     resolvedAddress,
+    recipientEmail,
     initTransaction,
     executeTransaction,
   };

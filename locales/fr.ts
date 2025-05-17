@@ -72,6 +72,11 @@ export default {
   "contacts.list.description":
     "Derniers contacts à qui vous avez transféré des fonds",
   "contacts.error.noUser": "Aucun utilisateur trouvé",
+  "contacts.table.header.name": "Nom",
+  "contacts.table.header.address": "Adresse",
+  "contacts.table.header.actions": "Actions",
+  "contacts.table.action.send": "Envoyer",
+  "contacts.search.noResults": "Aucun contact ne correspond à votre recherche.",
 
   // Transfer Modal First Step component
   "transfer.email.label": "Email, Username ou Wallet Address",

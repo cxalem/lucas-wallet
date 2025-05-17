@@ -168,7 +168,8 @@ export function ChatMessage({
                 
                 // Only access args if transaction hasn't been processed yet
                 if (!transactionHash && !transactionError) {
-                  const args = part.toolInvocation.args;;
+                  const args = part.toolInvocation.args;
+                  console.log("args", args);
                   return (
                     <TransactionConfirmationWrapper
                       key={`${message.id}-tool-${i}`}
